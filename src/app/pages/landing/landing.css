@@ -1,0 +1,16 @@
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700;800&display=swap');
+
+:host { display: block; background: #f8f7ff; font-family: 'Sora', sans-serif; color: #0f0a2e; }
+
+.logo       { font-size: 1.2rem; font-weight: 800; letter-spacing: -0.03em; color: #0f0a2e; }
+.logo-dot   { color: #6c47ff; }
+
+.hero       { min-height: 80vh; background: linear-gradient(135deg, #f8f7ff 0%, #ede9ff 50%, #f0e6ff 100%); }
+.hero-title { font-size: clamp(2.6rem, 5.5vw, 4.8rem); font-weight: 800; line-height: 1.1; letter-spacing: -0.04em; color: #0f0a2e; }
+.hero-title em { font-style: normal; background: linear-gradient(90deg, #6c47ff, #a855f7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.hero-sub  { color: #2d1f6e; font-size: 1.15rem; line-height: 1.8; }
+
+.stat-value { font-size: 2rem; font-weight: 800; color: #6c47ff; }
+.stat-label { font-size: 0.7rem; letter-spacing: .1em; text-transform: uppercase; color: #4a3a8a; font-weight: 600; }
+
+.feat-num   { font-size: 4rem; font-weight: 800; color: #d8d0ff; line-height: 1; }

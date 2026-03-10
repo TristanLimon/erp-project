@@ -1,0 +1,12 @@
+@import "primeicons/primeicons.css";
+@import "primeflex/primeflex.css";
+
+* { box-sizing: border-box; }
+body { margin: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
+
+:root {
+  --primary: #6c47ff;
+  --primary-light: #e9d5ff;
+  --surface: #f4f5f7;
+  --text: #0f0a2e;
+}

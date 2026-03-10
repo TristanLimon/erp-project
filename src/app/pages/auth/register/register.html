@@ -1,0 +1,197 @@
+<p-toast position="top-right" />
+
+<div class="flex flex-column align-items-center px-4 py-6"
+     [style]="{'min-height':'100vh','background':'#f8f7ff'}">
+
+  <div style="width:100%;max-width:720px">
+
+    <!-- HEADER -->
+    <div class="flex flex-column gap-2 mb-5">
+      <span class="logo" routerLink="/" style="cursor:pointer">
+        demo<span class="logo-dot">.</span>
+      </span>
+      <span class="font-bold" style="font-size:2rem;letter-spacing:-0.03em;color:#0f0a2e">Crear cuenta</span>
+      <span style="color:#4a3a8a;font-size:.95rem">Completa todos los campos para registrarte. Es gratis.</span>
+    </div>
+
+    <!-- FORM GRID -->
+    <div class="form-grid">
+
+      <!-- USUARIO -->
+      <div class="flex flex-column gap-2">
+        <label class="field-label">Nombre de usuario</label>
+        <p-iconfield>
+          <p-inputicon [class]="t['usuario'] && usuario ? 'pi pi-check-circle' : 'pi pi-user'"
+                       [style]="t['usuario'] && usuario && !vUsuario ? {'color':'#22c55e'} : {}" />
+          <input pInputText [(ngModel)]="usuario" (blur)="t['usuario']=true"
+                 (ngModelChange)="t['usuario']=true" placeholder="miusuario123"
+                 style="width:100%" [style]="vUsuario ? {'border-color':'#ef4444'} : {}" />
+        </p-iconfield>
+        @if (vUsuario) {
+          <p-message severity="error" text="El usuario es requerido" styleClass="w-full" />
+        }
+      </div>
+
+      <!-- EMAIL -->
+      <div class="flex flex-column gap-2">
+        <label class="field-label">Correo electrónico</label>
+        <p-iconfield>
+          <p-inputicon [class]="t['email'] && email && !vEmail ? 'pi pi-check-circle' : 'pi pi-envelope'"
+                       [style]="t['email'] && email && !vEmail ? {'color':'#22c55e'} : {}" />
+          <input pInputText type="email" [(ngModel)]="email" (blur)="t['email']=true"
+                 (ngModelChange)="t['email']=true" placeholder="tu@correo.com"
+                 style="width:100%" [style]="vEmail ? {'border-color':'#ef4444'} : {}" />
+        </p-iconfield>
+        @if (vEmail) {
+          <p-message severity="error" text="Ingresa un correo válido" styleClass="w-full" />
+        }
+      </div>
+
+      <!-- NOMBRE COMPLETO (full width) -->
+      <div class="flex flex-column gap-2 field-full">
+        <label class="field-label">Nombre completo</label>
+        <p-iconfield>
+          <p-inputicon [class]="t['nombre'] && nombreCompleto && !vNombre ? 'pi pi-check-circle' : 'pi pi-id-card'"
+                       [style]="t['nombre'] && nombreCompleto && !vNombre ? {'color':'#22c55e'} : {}" />
+          <input pInputText [(ngModel)]="nombreCompleto" (blur)="t['nombre']=true"
+                 (ngModelChange)="t['nombre']=true" placeholder="Juan García López"
+                 style="width:100%" [style]="vNombre ? {'border-color':'#ef4444'} : {}" />
+        </p-iconfield>
+        @if (vNombre) {
+          <p-message severity="error" text="El nombre completo es requerido" styleClass="w-full" />
+        }
+      </div>
+
+      <!-- TELÉFONO -->
+      <div class="flex flex-column gap-2">
+        <label class="field-label">
+          Teléfono
+          <p-tag value="10 dígitos" severity="secondary"
+                 [style]="{'font-size':'.7rem','padding':'.15rem .5rem','margin-left':'.4rem'}" />
+        </label>
+        <p-iconfield>
+          <p-inputicon [class]="t['telefono'] && telefono.length===10 ? 'pi pi-check-circle' : 'pi pi-phone'"
+                       [style]="t['telefono'] && telefono.length===10 ? {'color':'#22c55e'} : {}" />
+          <input pInputText type="tel" [(ngModel)]="telefono" (blur)="t['telefono']=true"
+                 (keydown)="soloNumeros($event)" (input)="limpiarTelefono()" (paste)="limpiarTelefono()"
+                 placeholder="5512345678" maxlength="10" inputmode="numeric"
+                 style="width:100%" [style]="vTelefono ? {'border-color':'#ef4444'} : {}" />
+        </p-iconfield>
+        @if (telefono || t['telefono']) {
+          <div class="flex justify-content-end">
+            <p-tag [value]="telefono.length + '/10'"
+                   [severity]="telefono.length === 10 ? 'success' : telefono.length > 0 ? 'warn' : 'secondary'"
+                   [style]="{'font-size':'.75rem'}" />
+          </div>
+        }
+        @if (vTelefono) {
+          <p-message severity="error" text="Ingresa exactamente 10 dígitos" styleClass="w-full" />
+        }
+      </div>
+
+      <!-- FECHA NACIMIENTO -->
+      <div class="flex flex-column gap-2">
+        <label class="field-label">
+          Fecha de nacimiento
+          <p-tag value="+18 años" severity="secondary"
+                 [style]="{'font-size':'.7rem','padding':'.15rem .5rem','margin-left':'.4rem'}" />
+        </label>
+        <p-datepicker
+          [(ngModel)]="fechaNacimiento" (ngModelChange)="t['fecha']=true" (onBlur)="t['fecha']=true"
+          [maxDate]="maxFecha" dateFormat="dd/mm/yy" placeholder="DD/MM/AAAA"
+          [showIcon]="true" [readonlyInput]="true" styleClass="w-full"
+          [inputStyle]="vFecha ? {'border-color':'#ef4444','width':'100%'} : {'width':'100%'}" />
+        @if (vFecha) {
+          <p-message severity="error" text="Debes ser mayor de 18 años" styleClass="w-full" />
+        }
+        @if (t['fecha'] && fechaNacimiento && !vFecha) {
+          <p-message severity="success" text="Edad verificada" styleClass="w-full" />
+        }
+      </div>
+
+      <!-- DIRECCIÓN (full width) -->
+      <div class="flex flex-column gap-2 field-full">
+        <label class="field-label">Dirección</label>
+        <p-iconfield>
+          <p-inputicon [class]="t['direccion'] && direccion && !vDireccion ? 'pi pi-check-circle' : 'pi pi-map-marker'"
+                       [style]="t['direccion'] && direccion && !vDireccion ? {'color':'#22c55e'} : {}" />
+          <input pInputText [(ngModel)]="direccion" (blur)="t['direccion']=true"
+                 (ngModelChange)="t['direccion']=true" placeholder="Calle, Número, Colonia, Ciudad"
+                 style="width:100%" [style]="vDireccion ? {'border-color':'#ef4444'} : {}" />
+        </p-iconfield>
+        @if (vDireccion) {
+          <p-message severity="error" text="La dirección es requerida" styleClass="w-full" />
+        }
+      </div>
+
+      <!-- PASSWORD -->
+      <div class="flex flex-column gap-2">
+        <label class="field-label">Contraseña</label>
+        <p-password [(ngModel)]="password" (ngModelChange)="t['password']=true" (onBlur)="t['password']=true"
+                    placeholder="Mín. 10 caracteres" [toggleMask]="true" [feedback]="false"
+                    styleClass="w-full" [inputStyle]="{'width':'100%'}"
+                    [inputStyleClass]="vPassword ? 'ng-invalid ng-dirty' : (t['password'] && pwdOk ? 'border-green-500' : '')" />
+        @if (t['password'] && password) {
+          <div class="pwd-checklist">
+            @for (r of pwdChecklist; track r.label) {
+              <div class="req" [class.req-ok]="r.ok">
+                <i class="pi text-xs" [class.pi-check-circle]="r.ok" [class.pi-circle]="!r.ok"></i>
+                {{ r.label }}
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+      <!-- CONFIRMAR PASSWORD -->
+      <div class="flex flex-column gap-2">
+        <label class="field-label">Confirmar contraseña</label>
+        <p-password [(ngModel)]="confirmarPassword" (ngModelChange)="t['confirmar']=true" (onBlur)="t['confirmar']=true"
+                    placeholder="Repite tu contraseña" [toggleMask]="true" [feedback]="false"
+                    styleClass="w-full" [inputStyle]="{'width':'100%'}"
+                    [inputStyleClass]="vConfirmar ? 'ng-invalid ng-dirty' : (t['confirmar'] && confirmarPassword && !vConfirmar ? 'border-green-500' : '')" />
+        @if (vConfirmar) {
+          <p-message severity="error" text="Las contraseñas no coinciden" styleClass="w-full" />
+        }
+        @if (t['confirmar'] && confirmarPassword && !vConfirmar) {
+          <p-message severity="success" text="Las contraseñas coinciden" styleClass="w-full" />
+        }
+      </div>
+
+      <!-- TÉRMINOS (full width) -->
+      <div class="flex align-items-center gap-3 field-full">
+        <p-checkbox [(ngModel)]="terminos" [binary]="true" inputId="terminos" />
+        <label for="terminos" style="font-size:.88rem;color:#4a3a8a;cursor:pointer">
+          Acepto los
+          <p-button label="términos de uso" variant="text"
+                    [style]="{'color':'#6c47ff','padding':'0','font-size':'.88rem'}" />
+          y la
+          <p-button label="política de privacidad" variant="text"
+                    [style]="{'color':'#6c47ff','padding':'0','font-size':'.88rem'}" />
+        </label>
+      </div>
+
+      <!-- SUBMIT (full width) -->
+      <div class="flex flex-column gap-2 field-full">
+        <p-button
+          label="Crear cuenta" icon="pi pi-user-plus" iconPos="right"
+          [loading]="cargando" [disabled]="!formularioValido"
+          (onClick)="registrarse()" styleClass="w-full justify-content-center"
+          [style]="{'background':'#6c47ff','border-color':'#6c47ff','font-weight':'700','padding':'.85rem'}" />
+        @if (!formularioValido) {
+          <p-message severity="info" text="Completa todos los campos correctamente para continuar" styleClass="w-full" />
+        }
+      </div>
+
+    </div>
+
+    <!-- FOOTER -->
+    <p-divider />
+    <div class="text-center" style="font-size:.88rem;color:#4a3a8a">
+      ¿Ya tienes cuenta?
+      <p-button label="Inicia sesión" variant="text" (onClick)="irLogin()"
+                [style]="{'color':'#6c47ff','font-weight':'700','padding':'0 .25rem','font-size':'.88rem'}" />
+    </div>
+
+  </div>
+</div>

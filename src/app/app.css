@@ -1,0 +1,14 @@
+.contenedor {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  background-color: #f4f6f9;
+}
+
+h2 {
+  font-weight: 500;
+  color: #333;
+}

@@ -1,0 +1,15 @@
+.login-wrap { display:grid; grid-template-columns:1fr 1fr; min-height:100vh; }
+.left-panel { background:linear-gradient(160deg,#0f0a2e 0%,#1a1040 100%); }
+.right-panel { background:#f8f7ff; }
+.logo { font-size:2rem; font-weight:900; color:#fff; letter-spacing:-.04em; }
+.logo-dot { color:#6c47ff; }
+.creds-panel { background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.12); border-radius:14px; padding:1.25rem; }
+.creds-title { font-size:.72rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:#a89cff; }
+.cred-item { display:flex; align-items:center; gap:.75rem; padding:.6rem .85rem; background:rgba(108,71,255,.12); border:1px solid rgba(108,71,255,.3); border-radius:10px; cursor:pointer; transition:all .2s; }
+.cred-item:hover { background:rgba(108,71,255,.22); transform:translateX(3px); }
+.cred-badge { font-size:.7rem; font-weight:700; padding:.2rem .55rem; border-radius:6px; color:#fff; white-space:nowrap; }
+.form-title { font-size:2rem; font-weight:800; letter-spacing:-.03em; color:#0f0a2e; }
+.form-sub { color:#4a3a8a; font-size:.95rem; }
+.field-label { font-weight:600; font-size:.9rem; color:#2d1f6e; }
+.login-btn { background:#6c47ff !important; border-color:#6c47ff !important; font-weight:700 !important; padding:.85rem !important; }
+@media(max-width:768px) { .login-wrap { grid-template-columns:1fr; } .left-panel { display:none; } }

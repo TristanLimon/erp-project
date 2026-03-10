@@ -1,0 +1,60 @@
+.sidebar {
+  width: 240px;
+  min-height: 100vh;
+  background: linear-gradient(180deg, #0f0a2e 0%, #1a1040 100%);
+  display: flex;
+  flex-direction: column;
+  transition: width .25s ease;
+  position: relative;
+  flex-shrink: 0;
+}
+.sidebar.collapsed { width: 68px; }
+.sidebar-logo { padding: 1.25rem 1rem; display:flex; align-items:center; }
+.logo-text { font-size: 1.6rem; font-weight: 900; color: #fff; letter-spacing: -.04em; }
+.logo-dot { color: #6c47ff; }
+.sidebar-divider { margin: 0 !important; border-color: rgba(255,255,255,.08) !important; }
+.group-context { display:flex; align-items:center; gap:.6rem; margin:.5rem .75rem; padding:.6rem .75rem; background:rgba(255,255,255,.06); border-radius:10px; border-left:3px solid; overflow:hidden; }
+.group-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+.group-ctx-name { font-size:.82rem; font-weight:700; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.group-ctx-llm { font-size:.7rem; display:flex; align-items:center; gap:.25rem; margin-top:.1rem; }
+.sidebar-nav { flex: 1; padding: .75rem .5rem; display: flex; flex-direction: column; gap: .2rem; overflow-y: auto; }
+.nav-section-label { font-size:.65rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:rgba(255,255,255,.55); padding:.4rem .6rem .1rem; }
+.nav-item {
+  display: flex; align-items: center; gap: .75rem;
+  padding: .65rem .75rem; border-radius: 10px;
+  color: rgba(255,255,255,.82); text-decoration: none;
+  font-size: .88rem; font-weight: 500;
+  transition: all .18s; white-space: nowrap;
+}
+.nav-item i { font-size: 1rem; flex-shrink: 0; min-width: 20px; text-align: center; color: rgba(255,255,255,.75); }
+.nav-item:hover { background: rgba(255,255,255,.12); color: #fff; }
+.nav-item:hover i { color: #fff; }
+.nav-item.active, .nav-item.nav-active { background: rgba(108,71,255,.5); color: #fff; box-shadow: 0 2px 8px rgba(108,71,255,.3); }
+.nav-item.active i, .nav-item.nav-active i { color: #fff; }
+.nav-item-admin { color: #fbbf24 !important; }
+.nav-item-admin i { color: #fbbf24 !important; }
+.nav-item-admin:hover { background: rgba(245,158,11,.18) !important; color: #fcd34d !important; }
+.nav-item-admin.active { background: rgba(245,158,11,.3) !important; }
+.sidebar-footer { padding: .75rem .5rem; }
+.user-info { display:flex; align-items:center; gap:.65rem; padding:.5rem .5rem .75rem; overflow:hidden; }
+.user-name { display:block; font-size:.82rem; font-weight:600; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.user-perms { display:block; font-size:.7rem; color:rgba(255,255,255,.6); }
+.toggle-btn {
+  position: absolute; right: -12px; top: 50%;
+  transform: translateY(-50%);
+  width: 24px; height: 24px; border-radius: 50%;
+  background: #6c47ff; color: #fff; border: none;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; font-size: .7rem;
+  box-shadow: 0 2px 8px rgba(108,71,255,.4);
+  transition: background .15s;
+}
+.toggle-btn:hover { background: #5a38ee; }
+
+/* External sidebar HTML template classes */
+.logo { font-size: 1.4rem; font-weight: 900; color: #fff; letter-spacing: -.04em; }
+.logo-dot { color: #7c5cfc; }
+.section-label { font-size: .62rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: rgba(255,255,255,.55); padding: .3rem .5rem .1rem; display: block; }
+.nav-icon { font-size: 1rem; flex-shrink: 0; width: 20px; text-align: center; color: rgba(255,255,255,.75); }
+.nav-label { font-size: .88rem; font-weight: 500; color: rgba(255,255,255,.9); }
+.shortcut-badge { font-size: .65rem; color: rgba(255,255,255,.4); background: rgba(255,255,255,.08); padding: .1rem .4rem; border-radius: 5px; font-family: monospace; }

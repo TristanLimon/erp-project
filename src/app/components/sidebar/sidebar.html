@@ -1,0 +1,62 @@
+<div class="sidebar flex flex-column"
+     [style]="{'width': collapsed ? '64px' : '220px'}">
+
+  <!-- HEADER -->
+  <div class="flex align-items-center py-3 px-3 gap-2"
+       [class.justify-content-center]="collapsed"
+       [class.justify-content-between]="!collapsed">
+    @if (!collapsed) {
+      <span class="logo">demo<span class="logo-dot">.</span></span>
+    }
+    <p-button
+      [icon]="collapsed ? 'pi pi-chevron-right' : 'pi pi-chevron-left'"
+      variant="text" size="small" (onClick)="toggle()"
+      [pTooltip]="collapsed ? 'Expandir' : 'Colapsar'" tooltipPosition="right"
+      [style]="{'color':'#a89cff','min-width':'2rem','height':'2rem','flex-shrink':'0'}" />
+  </div>
+
+  <p-divider styleClass="my-1" [style]="{'border-color':'#1e1a4b','margin':'0'}" />
+
+  <!-- NAV -->
+  <nav class="flex flex-column gap-1 flex-1 px-2 py-2" style="overflow-y:auto">
+    @if (!collapsed) {
+      <span class="section-label">Navegación</span>
+    }
+    @for (item of navItems; track item.route) {
+      <a pRipple
+         [routerLink]="item.route"
+         routerLinkActive="nav-active"
+         [pTooltip]="collapsed ? item.label + ' (' + item.shortcut + ')' : ''"
+         tooltipPosition="right"
+         class="nav-item flex align-items-center gap-3 px-2 py-2 border-round-lg cursor-pointer no-underline"
+         [class.justify-content-center]="collapsed">
+        <i [class]="'pi ' + item.icon" class="nav-icon"></i>
+        @if (!collapsed) {
+          <span class="nav-label flex-1">{{ item.label }}</span>
+          @if (item.badge) {
+            <p-badge [value]="item.badge" />
+          }
+          <span class="shortcut-badge">{{ item.shortcut }}</span>
+        }
+      </a>
+    }
+  </nav>
+
+  <!-- FOOTER -->
+  <div class="px-2 py-2">
+    <p-divider styleClass="my-1" [style]="{'border-color':'#1e1a4b','margin':'0 0 .5rem'}" />
+    @if (!collapsed) {
+      <span class="block text-xs pb-2 px-2" style="color:#7a6aaa">v1.04</span>
+    }
+    <a pRipple (click)="cerrarSesion()"
+       pTooltip="Cerrar sesión" tooltipPosition="right"
+       class="nav-item logout flex align-items-center gap-3 px-2 py-2 border-round-lg cursor-pointer"
+       [class.justify-content-center]="collapsed">
+      <i class="pi pi-sign-out" style="color:#f87171;font-size:1rem;width:20px;text-align:center;flex-shrink:0"></i>
+      @if (!collapsed) {
+        <span style="color:#f87171;font-size:.9rem;flex:1">Cerrar sesión</span>
+      }
+    </a>
+  </div>
+
+</div>

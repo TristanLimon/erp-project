@@ -1,0 +1,81 @@
+<p-toast position="top-right" />
+
+<div class="login-wrap">
+  <!-- PANEL IZQUIERDO -->
+  <div class="left-panel flex flex-column justify-content-between p-5">
+    <span class="logo">demo<span class="logo-dot">.</span></span>
+
+    <div class="flex flex-column gap-3">
+      <div class="creds-panel">
+        <span class="creds-title">Cuentas de prueba — click para autocompletar</span>
+        <div class="flex flex-column gap-2 mt-3">
+          @for (c of credentials; track c.email) {
+            <div class="cred-item" (click)="fill(c)" [style]="{'border-color': c.color}">
+              <span class="cred-badge" [style]="{'background': c.color}">{{ c.label }}</span>
+              <div class="flex flex-column">
+                <span style="font-size:.82rem;color:#ddd4ff">{{ c.email }}</span>
+                <span style="font-size:.75rem;color:#b8adec">{{ c.pwd }}</span>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+
+      <p style="color:#a89cff;font-size:.82rem;font-style:italic;margin-top:1rem;text-align:center">
+        "La simplicidad es la máxima sofisticación." — da Vinci
+      </p>
+    </div>
+  </div>
+
+  <!-- PANEL DERECHO -->
+  <div class="right-panel flex align-items-center justify-content-center p-4">
+    <div style="width:100%;max-width:420px">
+
+      <div class="flex flex-column gap-2 mb-5">
+        <span class="form-title">Bienvenido de nuevo</span>
+        <span class="form-sub">Ingresa tus credenciales para continuar</span>
+      </div>
+
+      <div class="flex flex-column gap-4">
+        <!-- Email -->
+        <div class="flex flex-column gap-2">
+          <label class="field-label">Correo electrónico</label>
+          <p-iconfield>
+            <p-inputicon class="pi pi-envelope" />
+            <input pInputText type="email" [(ngModel)]="email" (blur)="emailTocado = true"
+                   placeholder="tu@correo.com" style="width:100%"
+                   [style]="emailInvalido ? {'border-color':'#ef4444'} : {}" />
+          </p-iconfield>
+          @if (emailInvalido) {
+            <p-message severity="error" text="Ingresa un correo válido" styleClass="w-full" />
+          }
+        </div>
+
+        <!-- Password -->
+        <div class="flex flex-column gap-2">
+          <label class="field-label">Contraseña</label>
+          <p-password [(ngModel)]="password" (onBlur)="passwordTocado = true"
+                      placeholder="••••••••" [feedback]="false" [toggleMask]="true"
+                      styleClass="w-full" [inputStyle]="{'width':'100%'}"
+                      [inputStyleClass]="passwordInvalida ? 'ng-invalid ng-dirty' : ''" />
+          @if (passwordInvalida) {
+            <p-message severity="error" text="La contraseña es requerida" styleClass="w-full" />
+          }
+        </div>
+
+        <p-button label="Iniciar sesión" icon="pi pi-sign-in" iconPos="right"
+                  [loading]="cargando" [disabled]="!formularioValido"
+                  styleClass="w-full justify-content-center login-btn"
+                  (onClick)="iniciarSesion()" />
+
+        <p-divider />
+
+        <div class="text-center" style="color:#4a3a8a;font-size:.88rem">
+          ¿No tienes cuenta?
+          <p-button label="Regístrate" variant="text" (onClick)="irRegister()"
+                    [style]="{'color':'#6c47ff','font-weight':'700','padding':'0 .25rem','font-size':'.88rem'}" />
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

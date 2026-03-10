@@ -1,0 +1,258 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+:host { display: block; font-family: 'DM Sans', sans-serif; }
+
+.user-wrapper {
+  padding: 2rem 2.5rem;
+  max-width: 860px;
+  animation: fadeUp 0.5s ease both;
+}
+
+/* TOPBAR */
+.topbar {
+  margin-bottom: 2rem;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.page-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: 2rem;
+  color: #111;
+  margin: 0 0 0.25rem;
+  letter-spacing: -0.02em;
+}
+
+.page-sub { color: #666; font-size: 0.9rem; margin: 0; font-weight: 300; }
+
+/* ── CARDS BASE ── */
+:host ::ng-deep .profile-card,
+:host ::ng-deep .detail-card,
+:host ::ng-deep .danger-card {
+  background: #ffffff !important;
+  color: #111 !important;
+  border-radius: 16px !important;
+  border: 1px solid #e8e8e4 !important;
+  box-shadow: 0 1px 4px #00000008 !important;
+}
+
+:host ::ng-deep .profile-card .p-card-body,
+:host ::ng-deep .detail-card .p-card-body,
+:host ::ng-deep .danger-card .p-card-body {
+  background: #ffffff !important;
+  color: #111 !important;
+  border-radius: 16px !important;
+}
+
+:host ::ng-deep .profile-card .p-card-content,
+:host ::ng-deep .detail-card .p-card-content,
+:host ::ng-deep .danger-card .p-card-content {
+  background: #ffffff !important;
+  color: #111 !important;
+}
+
+/* Card en modo edición resalta con borde azul */
+:host ::ng-deep .detail-card.edit-mode {
+  border: 1px solid #6366f1 !important;
+  box-shadow: 0 0 0 3px #6366f120 !important;
+  transition: border 0.25s, box-shadow 0.25s;
+}
+
+/* Sin padding en el header nativo para usar el nuestro */
+:host ::ng-deep .detail-card .p-card-header { padding: 0 !important; }
+:host ::ng-deep .detail-card .p-card-body { padding: 0 !important; }
+:host ::ng-deep .detail-card .p-card-content { padding: 1.5rem 2rem !important; }
+
+/* CARD HEADER ROW */
+.card-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 2rem;
+  border-bottom: 1px solid #f0f0ee;
+}
+
+.card-header-title {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+/* PROFILE CARD */
+:host ::ng-deep .profile-card { margin-bottom: 1.25rem; }
+:host ::ng-deep .profile-card .p-card-body { padding: 2rem !important; }
+.profile-section { margin-bottom: 1.5rem; }
+
+.profile-inner { display: flex; align-items: center; gap: 2rem; }
+
+.avatar-wrap { display: flex; flex-direction: column; align-items: center; flex-shrink: 0; }
+
+.avatar-circle {
+  width: 88px;
+  height: 88px;
+  background: #1e1b4b;
+  color: #a5b4fc;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'DM Serif Display', serif;
+  font-size: 2.5rem;
+  text-transform: uppercase;
+  box-shadow: 0 0 0 4px #e8e8ff;
+  transition: box-shadow 0.25s;
+}
+
+.edit-mode .avatar-circle { box-shadow: 0 0 0 4px #c7d2fe; }
+
+.profile-info { display: flex; flex-direction: column; gap: 0.35rem; }
+
+.profile-nombre {
+  font-family: 'DM Serif Display', serif;
+  font-size: 1.7rem;
+  color: #111 !important;
+  margin: 0;
+  letter-spacing: -0.02em;
+  transition: color 0.2s;
+}
+
+.profile-usuario { font-size: 0.88rem; color: #666 !important; font-weight: 400; }
+.profile-email   { font-size: 0.85rem; color: #999 !important; font-weight: 300; }
+
+/* ── MODO VISTA ── */
+.detail-section { margin-bottom: 1.5rem; }
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+
+.detail-item { display: flex; flex-direction: column; gap: 0.3rem; }
+.detail-item.full { grid-column: 1 / -1; }
+
+.detail-label {
+  font-size: 0.75rem;
+  color: #999 !important;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.detail-label i { font-size: 0.75rem; color: #999; }
+.detail-value { font-size: 0.95rem; color: #222 !important; font-weight: 400; }
+
+/* ── MODO EDICIÓN ── */
+.edit-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+  animation: fadeUp 0.3s ease both;
+}
+
+.edit-field { display: flex; flex-direction: column; gap: 0.4rem; }
+.edit-field.full { grid-column: 1 / -1; }
+
+.edit-label {
+  font-size: 0.75rem;
+  color: #666;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.edit-label i { font-size: 0.75rem; color: #888; }
+
+.edit-input {
+  width: 100%;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.95rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.edit-input.input-error {
+  border-color: #ef4444 !important;
+}
+
+.input-readonly {
+  background: #f9f9f9 !important;
+  color: #aaa !important;
+  cursor: not-allowed;
+}
+
+.edit-hint {
+  font-size: 0.75rem;
+  color: #aaa;
+}
+
+/* Botón guardar */
+.save-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.25rem 2rem;
+  border-top: 1px solid #f0f0ee;
+  flex-wrap: wrap;
+}
+
+:host ::ng-deep .save-hint { flex: 1; }
+
+/* ── DANGER ZONE ── */
+:host ::ng-deep .danger-card {
+  border: 1px solid #fecaca !important;
+  background: #fff9f9 !important;
+}
+:host ::ng-deep .danger-card .p-card-body { padding: 1.5rem !important; }
+:host ::ng-deep .danger-card .p-card-content { background: #fff9f9 !important; }
+
+.danger-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+}
+
+.danger-info { display: flex; align-items: flex-start; gap: 1rem; }
+.danger-icon { font-size: 1.4rem; color: #ef4444; flex-shrink: 0; margin-top: 0.1rem; }
+.danger-title { font-size: 0.95rem; font-weight: 600; color: #b91c1c; margin: 0 0 0.3rem; }
+.danger-desc { font-size: 0.82rem; color: #666; margin: 0; line-height: 1.5; max-width: 480px; }
+
+/* DIALOG */
+.dialog-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 0;
+  text-align: center;
+}
+.dialog-icon { font-size: 3rem; color: #ef4444; }
+.dialog-text { font-size: 0.95rem; color: #444; line-height: 1.6; margin: 0; }
+.dialog-actions { display: flex; gap: 0.75rem; justify-content: flex-end; }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 600px) {
+  .user-wrapper { padding: 1.5rem; }
+  .topbar { flex-direction: column; gap: 0.75rem; }
+  .profile-inner { flex-direction: column; text-align: center; }
+  .detail-grid, .edit-grid { grid-template-columns: 1fr; }
+  .detail-item.full, .edit-field.full { grid-column: 1; }
+  .danger-inner { flex-direction: column; align-items: flex-start; }
+  .card-header-row { padding: 1rem 1.25rem; }
+  :host ::ng-deep .detail-card .p-card-content { padding: 1.25rem !important; }
+  .save-row { padding: 1rem 1.25rem; }
+}

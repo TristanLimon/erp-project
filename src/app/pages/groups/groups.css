@@ -1,0 +1,117 @@
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700;800&display=swap');
+
+:host {
+  display: block;
+  font-family: 'Sora', sans-serif;
+  background: #f5f3ff;
+  min-height: 100vh;
+  padding: 2rem;
+}
+
+/* Título principal */
+.page-title {
+  font-size: 1.9rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: #1e1b4b;
+}
+
+/* Labels */
+.field-label {
+  font-size: .82rem;
+  font-weight: 600;
+  color: #312e81;
+}
+
+/* Descripción tabla */
+.desc-cell {
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-size: .88rem;
+  color: #4c1d95;
+  max-width: 220px;
+  cursor: default;
+}
+
+/* Cards superiores */
+.stat-card {
+  border-radius: 14px;
+  background: #ffffff;
+  border: 1px solid #e9e5ff;
+  box-shadow: 0 4px 14px rgba(76, 29, 149, 0.05);
+}
+
+/* Card principal */
+.main-card {
+  border-radius: 18px;
+  background: #ffffff;
+  border: 1px solid #e9e5ff;
+  box-shadow: 0 6px 18px rgba(76, 29, 149, 0.06);
+}
+
+/* Tabla */
+::ng-deep .p-datatable {
+  background: #ffffff;
+  color: #1f2937;
+}
+
+::ng-deep .p-datatable thead th {
+  background: #f3f0ff;
+  color: #1e1b4b;
+  font-weight: 600;
+}
+
+::ng-deep .p-datatable tbody tr {
+  transition: background 0.2s ease;
+}
+
+::ng-deep .p-datatable tbody tr:hover {
+  background: #f5f3ff;
+}
+
+/* Paginador */
+::ng-deep .p-paginator {
+  background: #ffffff;
+  border-top: 1px solid #eee;
+}
+
+/* ====== FORZAR TABLA MODO CLARO ====== */
+
+::ng-deep .p-datatable {
+  background: #ffffff !important;
+  color: #1f2937 !important;
+}
+
+::ng-deep .p-datatable-wrapper {
+  background: #ffffff !important;
+}
+
+::ng-deep .p-datatable thead > tr > th {
+  background: #f3f4f6 !important;
+  color: #111827 !important;
+  font-weight: 700 !important;
+  border-bottom: 1px solid #e5e7eb !important;
+}
+
+::ng-deep .p-datatable tbody > tr {
+  background: #ffffff !important;
+  color: #1f2937 !important;
+  border-bottom: 1px solid #f1f5f9 !important;
+}
+
+::ng-deep .p-datatable tbody > tr:hover {
+  background: #f9fafb !important;
+}
+
+::ng-deep .p-datatable tbody > tr > td {
+  color: #374151 !important;
+}
+
+/* Paginador claro */
+::ng-deep .p-paginator {
+  background: #ffffff !important;
+  color: #374151 !important;
+  border-top: 1px solid #e5e7eb !important;
+}

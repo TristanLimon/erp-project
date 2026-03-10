@@ -1,0 +1,21 @@
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700;800&display=swap');
+
+:host { display: block; font-family: 'Sora', sans-serif; }
+
+.logo      { font-size: 1.4rem; font-weight: 800; letter-spacing: -0.03em; color: #0f0a2e; }
+.logo-dot  { color: #6c47ff; }
+
+.field-label { font-size: .82rem; font-weight: 600; color: #2d1f6e; }
+
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+.field-full { grid-column: 1 / -1; }
+
+.pwd-checklist { display: grid; grid-template-columns: 1fr 1fr; gap: .3rem .75rem; padding: .75rem 1rem; background: #ede9ff; border-radius: 10px; }
+.req      { display: flex; align-items: center; gap: .35rem; font-size: .78rem; color: #9280cc; }
+.req-ok   { color: #22c55e; }
+
+@media (max-width: 600px) {
+  .form-grid { grid-template-columns: 1fr; }
+  .field-full { grid-column: 1; }
+  .pwd-checklist { grid-template-columns: 1fr; }
+}
