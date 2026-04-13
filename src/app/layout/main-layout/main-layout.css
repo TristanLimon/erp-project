@@ -1,2 +1,11 @@
-.app-shell { display:flex; min-height:100vh; background:#f4f5f7; }
-.app-content { flex:1; overflow-y:auto; min-width:0; transition:margin-left .25s; }
+.app-shell {
+  display: flex;
+  min-height: 100vh;
+  background: #f0f2f8;
+}
+.app-content {
+  flex: 1;
+  overflow-y: auto;
+  min-width: 0;
+  transition: margin-left .25s;
+}

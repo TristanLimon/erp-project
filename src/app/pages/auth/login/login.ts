@@ -12,7 +12,6 @@ import { DividerModule } from 'primeng/divider';
 import { MessageModule } from 'primeng/message';
 import { IconFieldModule } from 'primeng/iconfield';
 import { InputIconModule } from 'primeng/inputicon';
-import { ChipModule } from 'primeng/chip';
 import { MessageService } from 'primeng/api';
 import { PermissionService } from '../../../services/permission.service';
 
@@ -23,7 +22,7 @@ import { PermissionService } from '../../../services/permission.service';
     CommonModule, FormsModule,
     ButtonModule, InputTextModule, PasswordModule, ToastModule,
     CardModule, TagModule, DividerModule,
-    MessageModule, IconFieldModule, InputIconModule, ChipModule
+    MessageModule, IconFieldModule, InputIconModule
   ],
   providers: [MessageService],
   templateUrl: './login.html',
@@ -36,12 +35,9 @@ export class LoginComponent {
   emailTocado = false;
   passwordTocado = false;
 
-  credentials = [
-    { email: 'superadmin@demo.com', pwd: 'Admin@2024!!', label: 'SuperAdmin', color: '#6c47ff' },
-    { email: 'admin@demo.com',      pwd: 'Admin@2024!!', label: 'Admin',      color: '#0ea5e9' },
-    { email: 'usuario@demo.com',    pwd: 'User#12345$',  label: 'Usuario',    color: '#22c55e' },
-    { email: 'dev@demo.com',        pwd: 'Dev#12345$',   label: 'Dev',        color: '#f59e0b' },
-  ];
+  // Easter egg: 5 clicks en el logo
+  private logoClicks = 0;
+  private logoTimer: any;
 
   constructor(
     private router: Router,
@@ -52,32 +48,71 @@ export class LoginComponent {
   get emailInvalido(): boolean {
     return this.emailTocado && (!this.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.email));
   }
-  get passwordInvalida(): boolean { return this.passwordTocado && !this.password; }
+
+  get passwordInvalida(): boolean {
+    return this.passwordTocado && !this.password;
+  }
+
   get formularioValido(): boolean {
     return !!this.email && !!this.password && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.email);
   }
 
-  fill(c: { email: string; pwd: string }) {
-    this.email = c.email;
-    this.password = c.pwd;
+  /**
+   * Easter egg: 5 clicks en el logo → toast "catch u"
+   * El requerimiento dice "display an alert: catch u" pero NO usamos alert() nativo.
+   * Usamos p-toast de PrimeNG para no romper la regla "no alerts nativos".
+   */
+  onLogoClick() {
+    this.logoClicks++;
+    clearTimeout(this.logoTimer);
+    this.logoTimer = setTimeout(() => { this.logoClicks = 0; }, 2000);
+    if (this.logoClicks >= 5) {
+      this.logoClicks = 0;
+      this.messageService.add({
+        severity: 'warn',
+        summary: '👀 catch u',
+        detail: '¡Te atrapé haciendo clic en el logo!',
+        life: 4000,
+      });
+    }
   }
 
-  iniciarSesion() {
+  async iniciarSesion() {
     this.emailTocado = true;
     this.passwordTocado = true;
     if (!this.formularioValido) return;
+
     this.cargando = true;
-    setTimeout(() => {
-      const user = this.ps.login(this.email, this.password);
-      this.cargando = false;
+    try {
+      const user = await this.ps.login(this.email, this.password);
       if (user) {
-        this.messageService.add({ severity: 'success', summary: `¡Bienvenido, ${user.nombreCompleto}!`, life: 2000 });
+        this.messageService.add({
+          severity: 'success',
+          summary: `¡Bienvenido, ${user.nombreCompleto}!`,
+          life: 2000,
+        });
         setTimeout(() => this.router.navigate(['/home']), 1200);
       } else {
-        this.messageService.add({ severity: 'error', summary: 'Credenciales incorrectas', detail: 'El correo o contraseña no son válidos.', life: 4000 });
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Credenciales incorrectas',
+          detail: 'El correo o contraseña no son válidos.',
+          life: 4000,
+        });
       }
-    }, 800);
+    } catch (err: any) {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Error',
+        detail: err.message ?? 'Error de conexión.',
+        life: 4000,
+      });
+    } finally {
+      this.cargando = false;
+    }
   }
 
-  irRegister() { this.router.navigate(['/register']); }
+  irRegister() {
+    this.router.navigate(['/register']);
+  }
 }

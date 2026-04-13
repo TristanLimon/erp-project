@@ -210,7 +210,7 @@ export class ProfileComponent implements OnInit {
     };
   }
 
-  guardar() {
+  async guardar() {
     const uid = this.user()!.id;
     const changes: any = {
       nombreCompleto: this.form.nombreCompleto,
@@ -221,7 +221,7 @@ export class ProfileComponent implements OnInit {
       fechaNacimiento: this.form.fechaNacimiento?.toISOString() ?? '',
     };
     if (this.form.password) changes.password = this.form.password;
-    this.ps.updateUser(uid, changes);
+    await this.ps.updateUser(uid, changes);
     this.msg.add({ severity: 'success', summary: 'Perfil actualizado', life: 2500 });
     this.form.password = '';
   }

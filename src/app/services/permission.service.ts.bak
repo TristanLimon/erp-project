@@ -1,21 +1,22 @@
 /**
  * PermissionService — integración con Supabase
  *
- * Soporta dos capas de permisos:
- *   1. Globales  → almacenados en profiles.permissions  (user:manage_permissions, group:create, etc.)
- *   2. Por grupo → almacenados en group_members.permissions
- *
- * has(p) retorna true si el usuario tiene el permiso en CUALQUIERA de las dos capas.
- * Esto permite que "Gestión Usuarios" y "Admin Grupos" funcionen sin grupo activo.
+ * Reemplaza el anterior servicio con datos hardcodeados.
+ * Mantiene exactamente la misma API pública para que el resto
+ * de los componentes no necesite cambios.
  */
 import { Injectable, signal, computed } from '@angular/core';
 import { SupabaseService } from './supabase.service';
 
+// ── Catálogo de permisos ──────────────────────────────────────────────────────
 export const ALL_PERMISSIONS = [
+  // Tickets
   'ticket:create', 'ticket:edit', 'ticket:delete', 'ticket:view',
   'ticket:assign', 'ticket:change_status', 'ticket:comment',
+  // Grupos
   'group:create', 'group:edit', 'group:delete', 'group:view',
   'group:add_member', 'group:remove_member',
+  // Usuarios
   'user:create', 'user:edit', 'user:delete', 'user:view',
   'user:manage_permissions',
 ] as const;
@@ -25,7 +26,7 @@ export type Permission = typeof ALL_PERMISSIONS[number];
 export interface AppUser {
   id: string;
   email: string;
-  password: string;
+  password: string;         // no se usa en Supabase Auth, se mantiene por compatibilidad
   usuario: string;
   nombreCompleto: string;
   direccion: string;
@@ -58,70 +59,127 @@ export const PRIORITY_MAP: Record<TicketPriority, { label: string; severity: str
   'minima':     { label: 'Mínima',     severity: 'secondary', color: '#8b5cf6' },
 };
 
-export interface TicketComment { id: string; userId: string; userName: string; text: string; createdAt: string; }
-export interface TicketHistory { id: string; userId: string; userName: string; field: string; oldValue: string; newValue: string; changedAt: string; }
+export interface TicketComment {
+  id: string;
+  userId: string;
+  userName: string;
+  text: string;
+  createdAt: string;
+}
+
+export interface TicketHistory {
+  id: string;
+  userId: string;
+  userName: string;
+  field: string;
+  oldValue: string;
+  newValue: string;
+  changedAt: string;
+}
 
 export interface Ticket {
-  id: string; groupId: string; titulo: string; descripcion: string;
-  status: TicketStatus; prioridad: TicketPriority; asignadoA: string | null;
-  creadoPor: string; fechaCreacion: string; fechaLimite: string | null;
-  comments: TicketComment[]; history: TicketHistory[];
+  id: string;
+  groupId: string;
+  titulo: string;
+  descripcion: string;
+  status: TicketStatus;
+  prioridad: TicketPriority;
+  asignadoA: string | null;
+  creadoPor: string;
+  fechaCreacion: string;
+  fechaLimite: string | null;
+  comments: TicketComment[];
+  history: TicketHistory[];
 }
+
+// ── Helpers: mapeo de nombres snake_case (Supabase) ↔ camelCase (Angular) ──────
 
 function mapProfile(row: any): AppUser {
   return {
-    id: row.id, email: row.email ?? '', password: '',
-    usuario: row.usuario ?? '', nombreCompleto: row.nombre_completo ?? '',
-    direccion: row.direccion ?? '', telefono: row.telefono ?? '',
+    id: row.id,
+    email: row.email ?? '',
+    password: '',
+    usuario: row.usuario ?? '',
+    nombreCompleto: row.nombre_completo ?? '',
+    direccion: row.direccion ?? '',
+    telefono: row.telefono ?? '',
     fechaNacimiento: row.fecha_nacimiento ?? '',
-    permissions: (row.permissions ?? []) as Permission[],
+    permissions: row.permissions ?? [],
     avatar: row.avatar ?? '',
   };
 }
 
 function mapGroup(row: any, memberIds: string[] = []): Group {
   return {
-    id: row.id, nombre: row.nombre, descripcion: row.descripcion ?? '',
-    llmModel: row.llm_model ?? 'GPT-4o', color: row.color ?? '#6c47ff',
-    memberIds, createdAt: row.created_at,
+    id: row.id,
+    nombre: row.nombre,
+    descripcion: row.descripcion ?? '',
+    llmModel: row.llm_model ?? 'GPT-4o',
+    color: row.color ?? '#6c47ff',
+    memberIds,
+    createdAt: row.created_at,
   };
 }
 
 function mapTicket(row: any): Ticket {
   return {
-    id: row.id, groupId: row.group_id, titulo: row.titulo,
-    descripcion: row.descripcion ?? '', status: row.status as TicketStatus,
-    prioridad: row.prioridad as TicketPriority, asignadoA: row.asignado_a ?? null,
-    creadoPor: row.creado_por ?? '', fechaCreacion: row.created_at,
+    id: row.id,
+    groupId: row.group_id,
+    titulo: row.titulo,
+    descripcion: row.descripcion ?? '',
+    status: row.status as TicketStatus,
+    prioridad: row.prioridad as TicketPriority,
+    asignadoA: row.asignado_a ?? null,
+    creadoPor: row.creado_por ?? '',
+    fechaCreacion: row.created_at,
     fechaLimite: row.fecha_limite ?? null,
-    comments: (row.ticket_comments ?? []).map((c: any) => ({ id: c.id, userId: c.user_id, userName: c.user_name, text: c.text, createdAt: c.created_at })),
-    history: (row.ticket_history ?? []).map((h: any) => ({ id: h.id, userId: h.user_id, userName: h.user_name, field: h.field, oldValue: h.old_value ?? '', newValue: h.new_value ?? '', changedAt: h.changed_at })),
+    comments: (row.ticket_comments ?? []).map((c: any) => ({
+      id: c.id,
+      userId: c.user_id,
+      userName: c.user_name,
+      text: c.text,
+      createdAt: c.created_at,
+    })),
+    history: (row.ticket_history ?? []).map((h: any) => ({
+      id: h.id,
+      userId: h.user_id,
+      userName: h.user_name,
+      field: h.field,
+      oldValue: h.old_value ?? '',
+      newValue: h.new_value ?? '',
+      changedAt: h.changed_at,
+    })),
   };
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+
 @Injectable({ providedIn: 'root' })
 export class PermissionService {
+  // sb se asigna en el constructor para evitar "used before initialization"
   private sb!: SupabaseService['client'];
 
+  // ── Señales reactivas ─────────────────────────────────────────────────────
   private _users    = signal<AppUser[]>([]);
   private _groups   = signal<Group[]>([]);
   private _tickets  = signal<Ticket[]>([]);
   private _currentUser    = signal<AppUser | null>(null);
   private _currentGroupId = signal<string | null>(null);
 
-  /** Permisos globales del usuario (profiles.permissions) */
-  private _globalPermissions = signal<Permission[]>([]);
-  /** Permisos del usuario en el grupo activo (group_members.permissions) */
+  // Permisos del usuario en el grupo activo
   private _activePermissions = signal<Permission[]>([]);
 
   readonly currentUser  = computed(() => this._currentUser());
-  readonly currentGroup = computed(() => this._groups().find(g => g.id === this._currentGroupId()) ?? null);
+  readonly currentGroup = computed(() =>
+    this._groups().find(g => g.id === this._currentGroupId()) ?? null
+  );
   readonly users   = computed(() => this._users());
   readonly groups  = computed(() => this._groups());
   readonly tickets = computed(() => this._tickets());
 
   constructor(private supabase: SupabaseService) {
     this.sb = supabase.client;
+    // Restaurar sesión si existe
     this.sb.auth.getSession().then(({ data }) => {
       if (data.session?.user) {
         this.loadUserData(data.session.user.id, data.session.user.email ?? '');
@@ -137,18 +195,38 @@ export class PermissionService {
     return this.loadUserData(data.user.id, data.user.email ?? '');
   }
 
-  async registrar(params: { email: string; password: string; usuario: string; nombreCompleto: string; telefono?: string; direccion?: string; fechaNacimiento?: string; }): Promise<{ ok: boolean; msg: string }> {
+  async registrar(params: {
+    email: string;
+    password: string;
+    usuario: string;
+    nombreCompleto: string;
+    telefono?: string;
+    direccion?: string;
+    fechaNacimiento?: string;
+  }): Promise<{ ok: boolean; msg: string }> {
     const { data, error } = await this.sb.auth.signUp({
-      email: params.email, password: params.password,
-      options: { data: { usuario: params.usuario, nombre_completo: params.nombreCompleto } },
+      email: params.email,
+      password: params.password,
+      options: {
+        data: {
+          usuario: params.usuario,
+          nombre_completo: params.nombreCompleto,
+        },
+      },
     });
+
     if (error) return { ok: false, msg: error.message };
     if (!data.user) return { ok: false, msg: 'Error al crear usuario.' };
+
+    // Actualizar datos extra del perfil
     await this.sb.from('profiles').update({
-      usuario: params.usuario, nombre_completo: params.nombreCompleto,
-      telefono: params.telefono ?? '', direccion: params.direccion ?? '',
+      usuario: params.usuario,
+      nombre_completo: params.nombreCompleto,
+      telefono: params.telefono ?? '',
+      direccion: params.direccion ?? '',
       fecha_nacimiento: params.fechaNacimiento ?? '',
     }).eq('id', data.user.id);
+
     return { ok: true, msg: 'Cuenta creada exitosamente.' };
   }
 
@@ -156,44 +234,71 @@ export class PermissionService {
     await this.sb.auth.signOut();
     this._currentUser.set(null);
     this._currentGroupId.set(null);
-    this._globalPermissions.set([]);
     this._activePermissions.set([]);
-    this._users.set([]); this._groups.set([]); this._tickets.set([]);
+    this._users.set([]);
+    this._groups.set([]);
+    this._tickets.set([]);
   }
 
-  // ── Carga de datos ────────────────────────────────────────────────────────
+  // ── Carga de datos del usuario ────────────────────────────────────────────
 
   async loadUserData(userId: string, email: string): Promise<AppUser | null> {
-    const { data: profile } = await this.sb.from('profiles').select('*').eq('id', userId).single();
+    // 1. Perfil
+    const { data: profile } = await this.sb
+      .from('profiles')
+      .select('*')
+      .eq('id', userId)
+      .single();
+
     if (!profile) return null;
 
     const user: AppUser = mapProfile({ ...profile, email });
     this._currentUser.set(user);
 
-    // Cargar permisos GLOBALES desde el perfil
-    this._globalPermissions.set(user.permissions);
-
+    // 2. Grupos del usuario + membresías
     await this.loadGroupsAndMembers();
+
+    // 3. Todos los usuarios (para mostrar en UI)
     await this.loadAllUsers();
+
     return user;
   }
 
   private async loadGroupsAndMembers() {
+    // Obtener membresías del usuario actual
     const uid = this._currentUser()?.id;
     if (!uid) return;
-    const { data: allMembers } = await this.sb.from('group_members').select('group_id, user_id, permissions');
-    const { data: allGroups }  = await this.sb.from('groups').select('*');
+
+    const { data: allMembers } = await this.sb
+      .from('group_members')
+      .select('group_id, user_id, permissions');
+
+    const { data: allGroups } = await this.sb
+      .from('groups')
+      .select('*');
+
     if (!allGroups || !allMembers) return;
+
+    // Construir grupos con memberIds
     const groups: Group[] = allGroups.map(g => {
-      const memberIds = (allMembers ?? []).filter(m => m.group_id === g.id).map(m => m.user_id);
+      const memberIds = (allMembers ?? [])
+        .filter(m => m.group_id === g.id)
+        .map(m => m.user_id);
       return mapGroup(g, memberIds);
     });
+
     this._groups.set(groups);
   }
 
   private async loadAllUsers() {
-    const { data } = await this.sb.from('profiles').select('*');
+    const { data } = await this.sb
+      .from('profiles')
+      .select('*');
+
     if (!data) return;
+
+    // Obtener emails de auth (solo el superadmin real puede hacer esto;
+    // para la UI usamos los perfiles sin email o con email del currentUser)
     const users: AppUser[] = data.map(p =>
       mapProfile({ ...p, email: p.id === this._currentUser()?.id ? this._currentUser()?.email : '' })
     );
@@ -204,25 +309,37 @@ export class PermissionService {
 
   async setCurrentGroup(groupId: string) {
     this._currentGroupId.set(groupId);
+
+    // Cargar permisos del usuario en este grupo
     const uid = this._currentUser()?.id;
     if (!uid) return;
-    const { data } = await this.sb.from('group_members').select('permissions').eq('group_id', groupId).eq('user_id', uid).single();
+
+    const { data } = await this.sb
+      .from('group_members')
+      .select('permissions')
+      .eq('group_id', groupId)
+      .eq('user_id', uid)
+      .single();
+
     this._activePermissions.set((data?.permissions ?? []) as Permission[]);
+
+    // Cargar tickets del grupo
     await this.loadTickets(groupId);
   }
 
-  /**
-   * Verifica permiso en capa global (profiles.permissions)
-   * O en el grupo activo (group_members.permissions).
-   */
   has(permission: Permission): boolean {
-    return this._globalPermissions().includes(permission) || this._activePermissions().includes(permission);
+    return this._activePermissions().includes(permission);
   }
 
-  hasAny(...perms: Permission[]): boolean { return perms.some(p => this.has(p)); }
-  hasAll(...perms: Permission[]): boolean { return perms.every(p => this.has(p)); }
+  hasAny(...perms: Permission[]): boolean {
+    return perms.some(p => this.has(p));
+  }
 
-  // ── Grupos ────────────────────────────────────────────────────────────────
+  hasAll(...perms: Permission[]): boolean {
+    return perms.every(p => this.has(p));
+  }
+
+  // ── Grupos del usuario actual ─────────────────────────────────────────────
 
   myGroups(): Group[] {
     const uid = this._currentUser()?.id;
@@ -236,27 +353,56 @@ export class PermissionService {
     return this._users().filter(u => group.memberIds.includes(u.id));
   }
 
-  ticketsByGroup(groupId: string): Ticket[] { return this._tickets().filter(t => t.groupId === groupId); }
-  getUserById(id: string): AppUser | undefined { return this._users().find(u => u.id === id); }
+  ticketsByGroup(groupId: string): Ticket[] {
+    return this._tickets().filter(t => t.groupId === groupId);
+  }
+
+  getUserById(id: string): AppUser | undefined {
+    return this._users().find(u => u.id === id);
+  }
 
   // ── Tickets ───────────────────────────────────────────────────────────────
 
   private async loadTickets(groupId: string) {
-    const { data } = await this.sb.from('tickets').select(`*, ticket_comments(*), ticket_history(*)`).eq('group_id', groupId).order('created_at', { ascending: false });
+    const { data } = await this.sb
+      .from('tickets')
+      .select(`
+        *,
+        ticket_comments(*),
+        ticket_history(*)
+      `)
+      .eq('group_id', groupId)
+      .order('created_at', { ascending: false });
+
     if (!data) return;
+
+    // Actualizar el signal: mantener tickets de otros grupos + los nuevos
     this._tickets.update(existing => {
       const otherGroups = existing.filter(t => t.groupId !== groupId);
       return [...otherGroups, ...data.map(mapTicket)];
     });
   }
 
-  async createTicket(data: Omit<Ticket, 'id' | 'fechaCreacion' | 'comments' | 'history'>): Promise<Ticket> {
-    const { data: row, error } = await this.sb.from('tickets').insert({
-      group_id: data.groupId, titulo: data.titulo, descripcion: data.descripcion,
-      status: data.status, prioridad: data.prioridad, asignado_a: data.asignadoA,
-      creado_por: data.creadoPor, fecha_limite: data.fechaLimite,
-    }).select().single();
+  async createTicket(
+    data: Omit<Ticket, 'id' | 'fechaCreacion' | 'comments' | 'history'>
+  ): Promise<Ticket> {
+    const { data: row, error } = await this.sb
+      .from('tickets')
+      .insert({
+        group_id: data.groupId,
+        titulo: data.titulo,
+        descripcion: data.descripcion,
+        status: data.status,
+        prioridad: data.prioridad,
+        asignado_a: data.asignadoA,
+        creado_por: data.creadoPor,
+        fecha_limite: data.fechaLimite,
+      })
+      .select()
+      .single();
+
     if (error || !row) throw new Error(error?.message ?? 'Error creando ticket');
+
     const ticket = mapTicket({ ...row, ticket_comments: [], ticket_history: [] });
     this._tickets.update(ts => [...ts, ticket]);
     return ticket;
@@ -272,26 +418,64 @@ export class PermissionService {
     if (changes.fechaLimite !== undefined) updateData.fecha_limite = changes.fechaLimite;
     updateData.updated_at = new Date().toISOString();
 
-    const { error } = await this.sb.from('tickets').update(updateData).eq('id', id);
+    const { error } = await this.sb
+      .from('tickets')
+      .update(updateData)
+      .eq('id', id);
+
     if (error) throw new Error(error.message);
 
+    // Guardar historial de cambios
     const original = this._tickets().find(t => t.id === id);
     if (original) {
       const historyRows = (Object.keys(changes) as (keyof Ticket)[])
         .filter(f => !['comments', 'history', 'id', 'groupId', 'fechaCreacion'].includes(f))
         .filter(f => String((original as any)[f]) !== String((changes as any)[f]))
-        .map(f => ({ ticket_id: id, user_id: changedBy.id, user_name: changedBy.nombreCompleto, field: f, old_value: String((original as any)[f] ?? ''), new_value: String((changes as any)[f] ?? '') }));
-      if (historyRows.length > 0) await this.sb.from('ticket_history').insert(historyRows);
+        .map(f => ({
+          ticket_id: id,
+          user_id: changedBy.id,
+          user_name: changedBy.nombreCompleto,
+          field: f,
+          old_value: String((original as any)[f] ?? ''),
+          new_value: String((changes as any)[f] ?? ''),
+        }));
+
+      if (historyRows.length > 0) {
+        await this.sb.from('ticket_history').insert(historyRows);
+      }
     }
 
-    this._tickets.update(ts => ts.map(t => t.id === id ? { ...t, ...changes } : t));
+    // Actualizar señal local
+    this._tickets.update(ts => ts.map(t =>
+      t.id === id ? { ...t, ...changes } : t
+    ));
   }
 
   async addComment(ticketId: string, text: string, user: AppUser) {
-    const { data, error } = await this.sb.from('ticket_comments').insert({ ticket_id: ticketId, user_id: user.id, user_name: user.nombreCompleto, text }).select().single();
+    const { data, error } = await this.sb
+      .from('ticket_comments')
+      .insert({
+        ticket_id: ticketId,
+        user_id: user.id,
+        user_name: user.nombreCompleto,
+        text,
+      })
+      .select()
+      .single();
+
     if (error) throw new Error(error.message);
-    const comment: TicketComment = { id: data.id, userId: data.user_id, userName: data.user_name, text: data.text, createdAt: data.created_at };
-    this._tickets.update(ts => ts.map(t => t.id === ticketId ? { ...t, comments: [...t.comments, comment] } : t));
+
+    const comment: TicketComment = {
+      id: data.id,
+      userId: data.user_id,
+      userName: data.user_name,
+      text: data.text,
+      createdAt: data.created_at,
+    };
+
+    this._tickets.update(ts => ts.map(t =>
+      t.id === ticketId ? { ...t, comments: [...t.comments, comment] } : t
+    ));
   }
 
   async deleteTicket(id: string) {
@@ -299,16 +483,32 @@ export class PermissionService {
     this._tickets.update(ts => ts.filter(t => t.id !== id));
   }
 
-  // ── Grupos CRUD ───────────────────────────────────────────────────────────
+  // ── Grupos ────────────────────────────────────────────────────────────────
 
   async createGroup(data: Omit<Group, 'id' | 'createdAt'>): Promise<Group> {
     const uid = this._currentUser()!.id;
-    const { data: row, error } = await this.sb.from('groups').insert({
-      nombre: data.nombre, descripcion: data.descripcion,
-      llm_model: data.llmModel, color: data.color, created_by: uid,
-    }).select().single();
+
+    const { data: row, error } = await this.sb
+      .from('groups')
+      .insert({
+        nombre: data.nombre,
+        descripcion: data.descripcion,
+        llm_model: data.llmModel,
+        color: data.color,
+        created_by: uid,
+      })
+      .select()
+      .single();
+
     if (error || !row) throw new Error(error?.message ?? 'Error creando grupo');
-    await this.sb.from('group_members').insert({ group_id: row.id, user_id: uid, permissions: [...ALL_PERMISSIONS] });
+
+    // Agregar al creador como miembro con todos los permisos
+    await this.sb.from('group_members').insert({
+      group_id: row.id,
+      user_id: uid,
+      permissions: [...ALL_PERMISSIONS],
+    });
+
     const group = mapGroup(row, [...data.memberIds, uid]);
     this._groups.update(gs => [...gs, group]);
     return group;
@@ -320,6 +520,7 @@ export class PermissionService {
     if (changes.descripcion !== undefined) updateData.descripcion = changes.descripcion;
     if (changes.llmModel) updateData.llm_model = changes.llmModel;
     if (changes.color) updateData.color = changes.color;
+
     await this.sb.from('groups').update(updateData).eq('id', id);
     this._groups.update(gs => gs.map(g => g.id === id ? { ...g, ...changes } : g));
   }
@@ -330,22 +531,32 @@ export class PermissionService {
   }
 
   async addMemberToGroup(groupId: string, userId: string, permissions: Permission[] = []) {
-    const { error } = await this.sb.from('group_members').upsert({ group_id: groupId, user_id: userId, permissions });
+    const { error } = await this.sb.from('group_members').upsert({
+      group_id: groupId,
+      user_id: userId,
+      permissions,
+    });
     if (error) throw new Error(error.message);
     this._groups.update(gs => gs.map(g =>
       g.id === groupId && !g.memberIds.includes(userId)
-        ? { ...g, memberIds: [...g.memberIds, userId] } : g
+        ? { ...g, memberIds: [...g.memberIds, userId] }
+        : g
     ));
   }
 
   async removeMemberFromGroup(groupId: string, userId: string) {
-    await this.sb.from('group_members').delete().eq('group_id', groupId).eq('user_id', userId);
+    await this.sb.from('group_members')
+      .delete()
+      .eq('group_id', groupId)
+      .eq('user_id', userId);
     this._groups.update(gs => gs.map(g =>
-      g.id === groupId ? { ...g, memberIds: g.memberIds.filter(id => id !== userId) } : g
+      g.id === groupId
+        ? { ...g, memberIds: g.memberIds.filter(id => id !== userId) }
+        : g
     ));
   }
 
-  // ── Usuarios CRUD ─────────────────────────────────────────────────────────
+  // ── Usuarios ──────────────────────────────────────────────────────────────
 
   async updateUser(id: string, changes: Partial<AppUser>) {
     const updateData: any = {};
@@ -354,46 +565,45 @@ export class PermissionService {
     if (changes.telefono !== undefined) updateData.telefono = changes.telefono;
     if (changes.direccion !== undefined) updateData.direccion = changes.direccion;
     if (changes.fechaNacimiento !== undefined) updateData.fecha_nacimiento = changes.fechaNacimiento;
-    // Persiste permisos GLOBALES en profiles.permissions
-    if (changes.permissions !== undefined) updateData.permissions = changes.permissions;
 
     await this.sb.from('profiles').update(updateData).eq('id', id);
 
     this._users.update(us => us.map(u => u.id === id ? { ...u, ...changes } : u));
     if (this._currentUser()?.id === id) {
       this._currentUser.update(u => u ? { ...u, ...changes } : u);
-      if (changes.permissions !== undefined) {
-        this._globalPermissions.set(changes.permissions as Permission[]);
-      }
     }
   }
 
-  async updateUserPermissionsInGroup(groupId: string, userId: string, permissions: Permission[]) {
-    await this.sb.from('group_members').update({ permissions }).eq('group_id', groupId).eq('user_id', userId);
+  async updateUserPermissionsInGroup(
+    groupId: string,
+    userId: string,
+    permissions: Permission[]
+  ) {
+    await this.sb.from('group_members')
+      .update({ permissions })
+      .eq('group_id', groupId)
+      .eq('user_id', userId);
+
+    // Si es el usuario activo y es el grupo activo, refrescar permisos
     if (userId === this._currentUser()?.id && groupId === this._currentGroupId()) {
       this._activePermissions.set(permissions);
     }
   }
 
   async deleteUser(id: string) {
+    // Solo borra el perfil; auth.users requiere admin API
     await this.sb.from('profiles').delete().eq('id', id);
     this._users.update(us => us.filter(u => u.id !== id));
-    this._groups.update(gs => gs.map(g => ({ ...g, memberIds: g.memberIds.filter(mid => mid !== id) })));
+    this._groups.update(gs => gs.map(g => ({
+      ...g,
+      memberIds: g.memberIds.filter(mid => mid !== id),
+    })));
   }
 
   async createUser(data: Omit<AppUser, 'id'>): Promise<{ ok: boolean; msg: string }> {
-    return { ok: false, msg: 'Crear usuarios requiere un Edge Function de Supabase (Service Role).' };
-  }
-
-  /** Obtiene los permisos por grupo de un usuario específico */
-  async getUserGroupMemberships(userId: string): Promise<{ groupId: string; permissions: Permission[] }[]> {
-    const { data } = await this.sb
-      .from('group_members')
-      .select('group_id, permissions')
-      .eq('user_id', userId);
-    return (data ?? []).map(m => ({
-      groupId: m.group_id,
-      permissions: (m.permissions ?? []) as Permission[],
-    }));
+    // Nota: crear usuarios con email/password requiere la Service Role Key
+    // que NO debe estar en el frontend. Esta función es solo para el admin.
+    // En producción, implementar esto en un backend/edge function de Supabase.
+    return { ok: false, msg: 'Crear usuarios desde admin requiere un backend seguro.' };
   }
 }

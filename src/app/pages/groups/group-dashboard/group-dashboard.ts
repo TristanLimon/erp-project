@@ -190,9 +190,9 @@ export class GroupDashboardComponent implements OnInit {
 
   constructor(private route: ActivatedRoute, private router: Router, private ps: PermissionService) {}
 
-  ngOnInit() {
+  async ngOnInit() {
     this.groupId = this.route.snapshot.paramMap.get('id') ?? '';
-    this.ps.setCurrentGroup(this.groupId);
+    await this.ps.setCurrentGroup(this.groupId);
   }
 
   statusLabel(s: TicketStatus) { return STATUS_LABELS[s]; }

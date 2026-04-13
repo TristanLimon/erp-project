@@ -184,7 +184,7 @@ const STATUS_OPTS = [
         </div>
         <div class="meta-field" *ngIf="!canEdit()">
           <label>Asignado a</label>
-          <span>{{ getAssigneeName(ticket()!.asignadoA) ?? 'Sin asignar' }}</span>
+          <span>{{ getAssigneeName(ticket()!.asignadoA) || 'Sin asignar' }}</span>
         </div>
 
         <div class="meta-field" *ngIf="canEdit()">
@@ -294,10 +294,10 @@ export class TicketDetailComponent implements OnInit {
               private ps: PermissionService, private msg: MessageService,
               private confirm: ConfirmationService) {}
 
-  ngOnInit() {
+  async ngOnInit() {
     this.groupId = this.route.snapshot.paramMap.get('id') ?? '';
     this.ticketId = this.route.snapshot.paramMap.get('ticketId') ?? '';
-    this.ps.setCurrentGroup(this.groupId);
+    await this.ps.setCurrentGroup(this.groupId);
     this.loadForm();
   }
 
@@ -330,9 +330,9 @@ export class TicketDetailComponent implements OnInit {
     return t.asignadoA === uid && this.ps.has('ticket:change_status');
   }
 
-  guardar() {
+  async guardar() {
     const user = this.ps.currentUser()!;
-    this.ps.updateTicket(this.ticketId, {
+    await this.ps.updateTicket(this.ticketId, {
       titulo: this.form.titulo,
       descripcion: this.form.descripcion,
       status: this.form.status,
@@ -344,9 +344,9 @@ export class TicketDetailComponent implements OnInit {
     this.dirty = false;
   }
 
-  addComment() {
+  async addComment() {
     if (!this.newComment.trim()) return;
-    this.ps.addComment(this.ticketId, this.newComment, this.ps.currentUser()!);
+    await this.ps.addComment(this.ticketId, this.newComment, this.ps.currentUser()!);
     this.newComment = '';
     this.msg.add({ severity: 'success', summary: 'Comentario añadido', life: 2000 });
   }
@@ -357,8 +357,8 @@ export class TicketDetailComponent implements OnInit {
       header: 'Eliminar ticket',
       icon: 'pi pi-trash',
       acceptButtonStyleClass: 'p-button-danger',
-      accept: () => {
-        this.ps.deleteTicket(this.ticketId);
+      accept: async () => {
+        await this.ps.deleteTicket(this.ticketId);
         this.router.navigate(['/home/group', this.groupId, 'kanban']);
       }
     });

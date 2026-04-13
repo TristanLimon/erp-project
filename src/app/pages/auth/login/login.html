@@ -3,22 +3,18 @@
 <div class="login-wrap">
   <!-- PANEL IZQUIERDO -->
   <div class="left-panel flex flex-column justify-content-between p-5">
-    <span class="logo">demo<span class="logo-dot">.</span></span>
+    <!-- Logo con easter egg: 5 clicks → toast "catch u" -->
+    <span class="logo" (click)="onLogoClick()" style="cursor:pointer;user-select:none">
+      erp<span class="logo-dot">.</span>
+    </span>
 
     <div class="flex flex-column gap-3">
       <div class="creds-panel">
-        <span class="creds-title">Cuentas de prueba — click para autocompletar</span>
-        <div class="flex flex-column gap-2 mt-3">
-          @for (c of credentials; track c.email) {
-            <div class="cred-item" (click)="fill(c)" [style]="{'border-color': c.color}">
-              <span class="cred-badge" [style]="{'background': c.color}">{{ c.label }}</span>
-              <div class="flex flex-column">
-                <span style="font-size:.82rem;color:#ddd4ff">{{ c.email }}</span>
-                <span style="font-size:.75rem;color:#b8adec">{{ c.pwd }}</span>
-              </div>
-            </div>
-          }
-        </div>
+        <span class="creds-title">Sistema ERP de Tickets</span>
+        <p style="color:#b8adec;font-size:.82rem;margin-top:.75rem;line-height:1.6">
+          Gestión de tickets en modo Kanban o Lista.<br>
+          Permisos por usuario y grupo.
+        </p>
       </div>
 
       <p style="color:#a89cff;font-size:.82rem;font-style:italic;margin-top:1rem;text-align:center">
@@ -32,7 +28,7 @@
     <div style="width:100%;max-width:420px">
 
       <div class="flex flex-column gap-2 mb-5">
-        <span class="form-title">Bienvenido de nuevo</span>
+        <h1 class="form-title">Bienvenido de nuevo</h1>
         <span class="form-sub">Ingresa tus credenciales para continuar</span>
       </div>
 

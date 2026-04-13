@@ -175,9 +175,9 @@ export class TicketListComponent implements OnInit {
   constructor(private route: ActivatedRoute, public router: Router, private ps: PermissionService,
               private msg: MessageService, private confirm: ConfirmationService) {}
 
-  ngOnInit() {
+  async ngOnInit() {
     this.groupId = this.route.snapshot.paramMap.get('id') ?? '';
-    this.ps.setCurrentGroup(this.groupId);
+    await this.ps.setCurrentGroup(this.groupId);
     this.onFilter();
   }
 
@@ -212,8 +212,8 @@ export class TicketListComponent implements OnInit {
       header: 'Confirmar eliminación',
       icon: 'pi pi-trash',
       acceptButtonStyleClass: 'p-button-danger',
-      accept: () => {
-        this.ps.deleteTicket(t.id);
+      accept: async () => {
+        await this.ps.deleteTicket(t.id);
         this.onFilter();
         this.msg.add({ severity: 'success', summary: 'Ticket eliminado', life: 2500 });
       }

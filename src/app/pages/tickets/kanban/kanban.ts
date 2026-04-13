@@ -215,9 +215,9 @@ export class KanbanComponent implements OnInit {
 
   constructor(private route: ActivatedRoute, public router: Router, private ps: PermissionService, private msg: MessageService) {}
 
-  ngOnInit() {
+  async ngOnInit() {
     this.groupId = this.route.snapshot.paramMap.get('id') ?? '';
-    this.ps.setCurrentGroup(this.groupId);
+    await this.ps.setCurrentGroup(this.groupId);
   }
 
   getColTickets(status: TicketStatus) {
@@ -234,7 +234,7 @@ export class KanbanComponent implements OnInit {
     event.dataTransfer?.setData('ticketId', t.id);
   }
 
-  onDrop(event: DragEvent, newStatus: TicketStatus) {
+  async onDrop(event: DragEvent, newStatus: TicketStatus) {
     event.preventDefault();
     const ticketId = event.dataTransfer?.getData('ticketId') ?? this.draggedTicketId;
     if (!ticketId) return;
@@ -243,7 +243,7 @@ export class KanbanComponent implements OnInit {
       return;
     }
     const user = this.ps.currentUser()!;
-    this.ps.updateTicket(ticketId, { status: newStatus }, user);
+    await this.ps.updateTicket(ticketId, { status: newStatus }, user);
     this.draggedTicketId = null;
   }
 
@@ -254,10 +254,10 @@ export class KanbanComponent implements OnInit {
     this.showCreate = true;
   }
 
-  crearTicket() {
+  async crearTicket() {
     if (!this.form.titulo.trim()) return;
     const user = this.ps.currentUser()!;
-    this.ps.createTicket({
+    await this.ps.createTicket({
       groupId: this.groupId,
       titulo: this.form.titulo,
       descripcion: this.form.descripcion,

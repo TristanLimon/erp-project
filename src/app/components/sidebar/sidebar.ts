@@ -4,7 +4,6 @@ import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { TooltipModule } from 'primeng/tooltip';
 import { DividerModule } from 'primeng/divider';
-import { BadgeModule } from 'primeng/badge';
 import { AvatarModule } from 'primeng/avatar';
 import { PermissionService } from '../../services/permission.service';
 import { HasPermissionDirective } from '../../directives/has-permission.directive';
@@ -13,7 +12,7 @@ import { HasPermissionDirective } from '../../directives/has-permission.directiv
   selector: 'app-sidebar',
   standalone: true,
   imports: [CommonModule, RouterLink, RouterLinkActive, ButtonModule, TooltipModule,
-            DividerModule, BadgeModule, AvatarModule, HasPermissionDirective],
+            DividerModule, AvatarModule, HasPermissionDirective],
   template: `
 <aside class="sidebar" [class.collapsed]="collapsed">
   <!-- Logo -->
@@ -39,7 +38,8 @@ import { HasPermissionDirective } from '../../directives/has-permission.directiv
 
   <!-- Nav -->
   <nav class="sidebar-nav">
-    <!-- Global -->
+
+    <!-- ── Navegación global ─────────────────────────────── -->
     <a routerLink="/home" routerLinkActive="active" [routerLinkActiveOptions]="{exact:true}"
        class="nav-item" [pTooltip]="collapsed ? 'Mis Grupos' : ''" tooltipPosition="right">
       <i class="pi pi-th-large"></i>
@@ -51,7 +51,7 @@ import { HasPermissionDirective } from '../../directives/has-permission.directiv
       <span *ngIf="!collapsed">Mi Perfil</span>
     </a>
 
-    <!-- Group-specific -->
+    <!-- ── Sección del grupo activo ─────────────────────── -->
     @if (currentGroup()) {
       <p-divider styleClass="sidebar-divider" />
       <span *ngIf="!collapsed" class="nav-section-label">Grupo actual</span>
@@ -80,27 +80,43 @@ import { HasPermissionDirective } from '../../directives/has-permission.directiv
       </a>
     }
 
+    <!-- ── Sección administración (permisos globales) ───── -->
     <p-divider styleClass="sidebar-divider" />
+    <span *ngIf="!collapsed" class="nav-section-label">Administración</span>
 
-    <!-- Admin -->
-    <a *hasPermission="'user:manage_permissions'"
+    <a *hasPermission="['group:create','group:edit','group:delete','group:view']"
+       routerLink="/home/admin/groups" routerLinkActive="active"
+       class="nav-item nav-item-admin" [pTooltip]="collapsed ? 'Admin Grupos' : ''" tooltipPosition="right">
+      <i class="pi pi-folder-open"></i>
+      <span *ngIf="!collapsed">Admin Grupos</span>
+    </a>
+
+    <a *hasPermission="['user:manage_permissions','user:view','user:edit']"
        routerLink="/home/admin/users" routerLinkActive="active"
        class="nav-item nav-item-admin" [pTooltip]="collapsed ? 'Gestión Usuarios' : ''" tooltipPosition="right">
       <i class="pi pi-shield"></i>
       <span *ngIf="!collapsed">Gestión Usuarios</span>
     </a>
+
+    <a *hasPermission="'user:manage_permissions'"
+       routerLink="/home/admin/permissions" routerLinkActive="active"
+       class="nav-item nav-item-admin" [pTooltip]="collapsed ? 'Permisos' : ''" tooltipPosition="right">
+      <i class="pi pi-key"></i>
+      <span *ngIf="!collapsed">Permisos</span>
+    </a>
+
   </nav>
 
+  <!-- Footer -->
   <div class="sidebar-footer">
     <p-divider styleClass="sidebar-divider" />
-    <!-- User -->
     @if (!collapsed) {
       <div class="user-info">
         <p-avatar [label]="currentUser()?.nombreCompleto?.charAt(0) ?? '?'" shape="circle" size="normal"
                   [style]="{'background':'#6c47ff','color':'#fff'}" />
         <div style="overflow:hidden">
           <span class="user-name">{{ currentUser()?.nombreCompleto }}</span>
-          <span class="user-perms">{{ currentUser()?.permissions?.length }} permisos</span>
+          <span class="user-perms">{{ currentUser()?.permissions?.length }} permisos globales</span>
         </div>
       </div>
     }
@@ -121,7 +137,7 @@ export class SidebarComponent {
   @Input() collapsed = false;
   @Output() collapsedChange = new EventEmitter<boolean>();
 
-  currentUser = computed(() => this.ps.currentUser());
+  currentUser  = computed(() => this.ps.currentUser());
   currentGroup = computed(() => this.ps.currentGroup());
 
   constructor(private router: Router, private ps: PermissionService) {}
@@ -131,8 +147,10 @@ export class SidebarComponent {
     if (!event.ctrlKey) return;
     if (event.key === '1') { event.preventDefault(); this.router.navigate(['/home']); }
     if (event.key === '2') { event.preventDefault(); this.router.navigate(['/home/profile']); }
+    if (event.key === '3') { event.preventDefault(); this.router.navigate(['/home/admin/users']); }
+    if (event.key === '4') { event.preventDefault(); this.router.navigate(['/home/admin/groups']); }
   }
 
   toggle() { this.collapsed = !this.collapsed; this.collapsedChange.emit(this.collapsed); }
-  cerrarSesion() { this.ps.logout(); this.router.navigate(['/login']); }
+  async cerrarSesion() { await this.ps.logout(); this.router.navigate(['/login']); }
 }

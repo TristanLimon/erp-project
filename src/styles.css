@@ -1,12 +1,46 @@
 @import "primeicons/primeicons.css";
 @import "primeflex/primeflex.css";
 
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap');
+
 * { box-sizing: border-box; }
-body { margin: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
+
+body {
+  margin: 0;
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  background: #f0f2f8;
+  color: #0f0a2e;
+}
 
 :root {
   --primary: #6c47ff;
-  --primary-light: #e9d5ff;
-  --surface: #f4f5f7;
+  --primary-dark: #5534ee;
+  --primary-light: #ede9ff;
+  --accent: #f54927;
+  --surface: #f0f2f8;
+  --surface-card: #ffffff;
   --text: #0f0a2e;
+  --text-muted: #6b7280;
+  --border: #e5e7eb;
+  --radius: 14px;
+  --shadow-sm: 0 1px 6px rgba(0,0,0,.06);
+  --shadow-md: 0 4px 20px rgba(0,0,0,.08);
+  --shadow-lg: 0 8px 40px rgba(0,0,0,.12);
 }
+
+/* Scrollbars */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 20px; }
+::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
+
+/* PrimeNG overrides */
+.p-button { font-family: 'Plus Jakarta Sans', sans-serif !important; font-weight: 600 !important; border-radius: 10px !important; }
+.p-inputtext { font-family: 'Plus Jakarta Sans', sans-serif !important; border-radius: 10px !important; }
+.p-dialog { border-radius: 18px !important; overflow: hidden; }
+.p-dialog .p-dialog-header { padding: 1.5rem 1.5rem 1rem !important; border-bottom: 1px solid var(--border) !important; font-weight: 700 !important; }
+.p-dialog .p-dialog-content { padding: 1.25rem 1.5rem !important; }
+.p-dialog .p-dialog-footer { padding: 1rem 1.5rem 1.5rem !important; border-top: 1px solid var(--border) !important; }
+.p-select { border-radius: 10px !important; }
+.p-datatable .p-datatable-thead > tr > th { background: #f8f9fc !important; font-weight: 700 !important; font-size: .8rem !important; text-transform: uppercase; letter-spacing: .05em; color: var(--text-muted) !important; border-bottom: 2px solid var(--border) !important; }
+.p-toast { font-family: 'Plus Jakarta Sans', sans-serif !important; }

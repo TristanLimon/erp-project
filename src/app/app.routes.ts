@@ -3,14 +3,8 @@ import { authGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
-  {
-    path: 'login',
-    loadComponent: () => import('./pages/auth/login/login').then(m => m.LoginComponent)
-  },
-  {
-    path: 'register',
-    loadComponent: () => import('./pages/auth/register/register').then(m => m.RegisterComponent)
-  },
+  { path: 'login', loadComponent: () => import('./pages/auth/login/login').then(m => m.LoginComponent) },
+  { path: 'register', loadComponent: () => import('./pages/auth/register/register').then(m => m.RegisterComponent) },
   {
     path: 'home',
     canActivate: [authGuard],
@@ -24,6 +18,8 @@ export const routes: Routes = [
       { path: 'group/:id/manage', loadComponent: () => import('./pages/groups/group-manage/group-manage').then(m => m.GroupManageComponent) },
       { path: 'profile', loadComponent: () => import('./pages/user/profile/profile').then(m => m.ProfileComponent) },
       { path: 'admin/users', loadComponent: () => import('./pages/admin/user-management/user-management').then(m => m.UserManagementComponent) },
+      { path: 'admin/groups', loadComponent: () => import('./pages/admin/group-management/group-management').then(m => m.GroupManagementComponent) },
+      { path: 'admin/permissions', loadComponent: () => import('./pages/admin/permissions-manager/permissions-manager').then(m => m.PermissionsManagerComponent) },
     ]
   },
   { path: '**', redirectTo: 'login' }

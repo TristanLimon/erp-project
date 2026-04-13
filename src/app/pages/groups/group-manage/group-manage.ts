@@ -175,9 +175,9 @@ export class GroupManageComponent implements OnInit {
               private ps: PermissionService, private msg: MessageService,
               private confirm: ConfirmationService) {}
 
-  ngOnInit() {
+  async ngOnInit() {
     this.groupId = this.route.snapshot.paramMap.get('id') ?? '';
-    this.ps.setCurrentGroup(this.groupId);
+    await this.ps.setCurrentGroup(this.groupId);
     const g = this.group();
     if (g) {
       this.editNombre = g.nombre;
@@ -187,8 +187,8 @@ export class GroupManageComponent implements OnInit {
     }
   }
 
-  saveConfig() {
-    this.ps.updateGroup(this.groupId, {
+  async saveConfig() {
+    await this.ps.updateGroup(this.groupId, {
       nombre: this.editNombre,
       descripcion: this.editDesc,
       llmModel: this.editLLM,
@@ -197,13 +197,13 @@ export class GroupManageComponent implements OnInit {
     this.msg.add({ severity: 'success', summary: 'Grupo actualizado', life: 2500 });
   }
 
-  addMember() {
+  async addMember() {
     const user = this.ps.users().find(u => u.email === this.addEmail.trim());
     if (!user) { this.addMsg = 'Usuario no encontrado.'; this.addOk = false; return; }
     if (this.group()?.memberIds.includes(user.id)) {
       this.addMsg = 'Ya es miembro del grupo.'; this.addOk = false; return;
     }
-    this.ps.addMemberToGroup(this.groupId, user.id);
+    await this.ps.addMemberToGroup(this.groupId, user.id);
     this.addMsg = `${user.nombreCompleto} añadido correctamente.`;
     this.addOk = true;
     this.addEmail = '';
@@ -214,8 +214,8 @@ export class GroupManageComponent implements OnInit {
       message: `¿Remover a ${u.nombreCompleto} del grupo?`,
       header: 'Confirmar',
       icon: 'pi pi-user-minus',
-      accept: () => {
-        this.ps.removeMemberFromGroup(this.groupId, u.id);
+      accept: async () => {
+        await this.ps.removeMemberFromGroup(this.groupId, u.id);
         this.msg.add({ severity: 'success', summary: 'Miembro removido', life: 2500 });
       }
     });
@@ -227,8 +227,8 @@ export class GroupManageComponent implements OnInit {
       header: 'Eliminar grupo',
       icon: 'pi pi-trash',
       acceptButtonStyleClass: 'p-button-danger',
-      accept: () => {
-        this.ps.deleteGroup(this.groupId);
+      accept: async () => {
+        await this.ps.deleteGroup(this.groupId);
         this.router.navigate(['/home']);
         this.msg.add({ severity: 'success', summary: 'Grupo eliminado', life: 2500 });
       }

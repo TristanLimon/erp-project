@@ -127,15 +127,15 @@ export class GroupSelectComponent {
 
   constructor(private ps: PermissionService, private router: Router, private msg: MessageService) {}
 
-  selectGroup(g: Group) {
-    this.ps.setCurrentGroup(g.id);
+  async selectGroup(g: Group) {
+    await this.ps.setCurrentGroup(g.id);
     this.router.navigate(['/home/group', g.id]);
   }
 
-  crearGrupo() {
+  async crearGrupo() {
     if (!this.newGroup.nombre.trim()) return;
     const uid = this.ps.currentUser()!.id;
-    this.ps.createGroup({
+    await this.ps.createGroup({
       nombre: this.newGroup.nombre,
       descripcion: this.newGroup.descripcion,
       llmModel: this.newGroup.llmModel,
