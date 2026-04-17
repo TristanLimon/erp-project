@@ -180,23 +180,51 @@ const STATUS_OPTS = [
         <div class="meta-field" *ngIf="canEdit()">
           <label>Asignado a</label>
           <p-select [(ngModel)]="form.asignadoA" [options]="memberOpts()" optionLabel="label" optionValue="value"
-                    [showClear]="true" placeholder="Sin asignar" (onChange)="dirty = true" />
+                    [showClear]="true" placeholder="Sin asignar" (onChange)="dirty = true"
+                    [filter]="true" filterPlaceholder="Buscar miembro..." />
+          <!-- Botón de autoasignación -->
+          <p-button label="Asignarme" icon="pi pi-user" variant="text" size="small"
+                    (onClick)="autoAssign()" [style]="{'font-size':'.75rem','padding':'0.15rem 0.4rem','margin-top':'0.25rem'}" />
+          <!-- Preview del asignado -->
+          @if (form.asignadoA) {
+            <div class="assign-preview-mini">
+              <p-avatar [label]="getAssigneeName(form.asignadoA).charAt(0)" shape="circle"
+                        [style]="{'background': group()?.color, 'color':'#fff','width':'24px','height':'24px','font-size':'.7rem'}" />
+              <span class="assign-preview-name">{{ getAssigneeName(form.asignadoA) }}</span>
+            </div>
+          }
         </div>
         <div class="meta-field" *ngIf="!canEdit()">
           <label>Asignado a</label>
-          <span>{{ getAssigneeName(ticket()!.asignadoA) || 'Sin asignar' }}</span>
+          @if (ticket()!.asignadoA) {
+            <div class="assign-preview-mini">
+              <p-avatar [label]="getAssigneeName(ticket()!.asignadoA).charAt(0)" shape="circle"
+                        [style]="{'background': group()?.color, 'color':'#fff','width':'24px','height':'24px','font-size':'.7rem'}" />
+              <span class="assign-preview-name">{{ getAssigneeName(ticket()!.asignadoA) }}</span>
+            </div>
+          } @else {
+            <span>Sin asignar</span>
+          }
         </div>
 
         <div class="meta-field" *ngIf="canEdit()">
-          <label>Fecha límite</label>
+          <label>Fecha límite <span class="required">*</span></label>
           <p-datepicker [(ngModel)]="form.fechaLimite" dateFormat="dd/mm/yy" [showIcon]="true"
-                        (onSelect)="dirty = true" />
+                        [minDate]="today" (onSelect)="dirty = true"
+                        [style]="formErrors['fechaLimite'] ? {'border-color':'#ef4444'} : {}" />
+          @if (formErrors['fechaLimite']) {
+            <small class="field-error">{{ formErrors['fechaLimite'] }}</small>
+          }
         </div>
         <div class="meta-field" *ngIf="!canEdit() && ticket()!.fechaLimite">
           <label>Fecha límite</label>
           <span [class.overdue]="isOverdue(ticket()!.fechaLimite!)">
             {{ formatDate(ticket()!.fechaLimite!) }}
           </span>
+        </div>
+        <div class="meta-field" *ngIf="!canEdit() && !ticket()!.fechaLimite">
+          <label>Fecha límite</label>
+          <span class="no-date-warning"><i class="pi pi-exclamation-triangle"></i> Sin fecha límite</span>
         </div>
 
         <p-divider />
@@ -241,6 +269,11 @@ const STATUS_OPTS = [
     .desc-display { color:#4b5563; line-height:1.6; white-space:pre-wrap; margin:0; }
     .status-badge { display:inline-block; font-size:.82rem; font-weight:600; padding:.3rem .8rem; border-radius:20px; }
     .overdue { color:#ef4444; font-weight:600; }
+    .required { color:#ef4444; }
+    .field-error { color:#ef4444; font-size:.75rem; font-weight:500; }
+    .no-date-warning { color:#f59e0b; font-size:.85rem; display:flex; align-items:center; gap:.35rem; }
+    .assign-preview-mini { display:flex; align-items:center; gap:.5rem; margin-top:.25rem; }
+    .assign-preview-name { font-size:.85rem; font-weight:600; color:#1e40af; }
     .comments-section { display:flex; flex-direction:column; gap:.85rem; }
     .comment-item { display:flex; gap:.75rem; }
     .comment-body { flex:1; background:#f9fafb; border-radius:10px; padding:.85rem; }
@@ -273,11 +306,14 @@ export class TicketDetailComponent implements OnInit {
   ticketId = '';
   dirty = false;
   newComment = '';
+  today = new Date();
 
   form = {
     titulo: '', descripcion: '', status: 'pendiente' as TicketStatus,
     prioridad: 'media' as TicketPriority, asignadoA: null as string | null, fechaLimite: null as Date | null
   };
+
+  formErrors: Record<string, string> = {};
 
   ticket = computed(() => this.ps.tickets().find(t => t.id === this.ticketId) ?? null);
   group = computed(() => this.ps.groups().find(g => g.id === this.groupId) ?? null);
@@ -313,6 +349,7 @@ export class TicketDetailComponent implements OnInit {
       fechaLimite: t.fechaLimite ? new Date(t.fechaLimite) : null,
     };
     this.dirty = false;
+    this.formErrors = {};
   }
 
   // El creador puede editar todo; el asignado solo cambia estado/comentarios
@@ -330,25 +367,74 @@ export class TicketDetailComponent implements OnInit {
     return t.asignadoA === uid && this.ps.has('ticket:change_status');
   }
 
+  autoAssign() {
+    const uid = this.ps.currentUser()?.id ?? null;
+    this.form.asignadoA = uid;
+    this.dirty = true;
+  }
+
+  private validateForm(): boolean {
+    this.formErrors = {};
+    let valid = true;
+
+    // Fecha límite obligatoria al editar
+    if (!this.form.fechaLimite) {
+      this.formErrors['fechaLimite'] = 'La fecha límite es obligatoria.';
+      valid = false;
+    } else {
+      const limitDate = new Date(this.form.fechaLimite);
+      const todayStart = new Date();
+      todayStart.setHours(0, 0, 0, 0);
+      // Solo validar si la fecha cambió (permitir fechas pasadas ya existentes)
+      const originalDate = this.ticket()?.fechaLimite ? new Date(this.ticket()!.fechaLimite!) : null;
+      const dateChanged = !originalDate || limitDate.getTime() !== originalDate.getTime();
+      if (dateChanged && limitDate < todayStart) {
+        this.formErrors['fechaLimite'] = 'La fecha límite no puede ser en el pasado.';
+        valid = false;
+      }
+    }
+
+    return valid;
+  }
+
   async guardar() {
-    const user = this.ps.currentUser()!;
-    await this.ps.updateTicket(this.ticketId, {
-      titulo: this.form.titulo,
-      descripcion: this.form.descripcion,
-      status: this.form.status,
-      prioridad: this.form.prioridad,
-      asignadoA: this.form.asignadoA,
-      fechaLimite: this.form.fechaLimite ? this.form.fechaLimite.toISOString() : null,
-    }, user);
-    this.msg.add({ severity: 'success', summary: 'Ticket actualizado', life: 2500 });
-    this.dirty = false;
+    if (!this.validateForm()) {
+      this.msg.add({ severity: 'error', summary: 'Validación fallida', detail: 'Corrige los campos marcados.', life: 3000 });
+      return;
+    }
+
+    try {
+      const user = this.ps.currentUser()!;
+      await this.ps.updateTicket(this.ticketId, {
+        titulo: this.form.titulo,
+        descripcion: this.form.descripcion,
+        status: this.form.status,
+        prioridad: this.form.prioridad,
+        asignadoA: this.form.asignadoA,
+        fechaLimite: this.form.fechaLimite ? this.form.fechaLimite.toISOString() : null,
+      }, user);
+      this.msg.add({ severity: 'success', summary: 'Ticket actualizado', life: 2500 });
+      this.dirty = false;
+      this.formErrors = {};
+    } catch (err: any) {
+      this.msg.add({
+        severity: 'error',
+        summary: 'Error al guardar',
+        detail: err.message ?? 'Error inesperado.',
+        life: 4000,
+      });
+    }
   }
 
   async addComment() {
     if (!this.newComment.trim()) return;
-    await this.ps.addComment(this.ticketId, this.newComment, this.ps.currentUser()!);
-    this.newComment = '';
-    this.msg.add({ severity: 'success', summary: 'Comentario añadido', life: 2000 });
+    try {
+      await this.ps.addComment(this.ticketId, this.newComment, this.ps.currentUser()!);
+      this.newComment = '';
+      this.msg.add({ severity: 'success', summary: 'Comentario añadido', life: 2000 });
+    } catch (err: any) {
+      this.msg.add({ severity: 'error', summary: 'Error', detail: err.message ?? 'Error al comentar.', life: 3000 });
+    }
   }
 
   eliminar() {

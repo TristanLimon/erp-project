@@ -1,0 +1,672 @@
+% ============================================================================
+%  DOCUMENTACIÓN DEL PROYECTO ERP - Sistema de Gestión de Tickets
+%  Ingeniería de Software - LaTeX
+% ============================================================================
+\documentclass[12pt,a4paper]{article}
+
+% ── Paquetes ────────────────────────────────────────────────────────────────
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish]{babel}
+\usepackage{geometry}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{tocloft}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric, arrows.meta, positioning, fit}
+\usepackage{parskip}
+\usepackage{setspace}
+
+% ── Configuración de página ─────────────────────────────────────────────────
+\geometry{top=2.5cm, bottom=2.5cm, left=3cm, right=2.5cm}
+\setstretch{1.5}
+
+% ── Colores personalizados ──────────────────────────────────────────────────
+\definecolor{primaryblue}{HTML}{1E40AF}
+\definecolor{darkgray}{HTML}{374151}
+\definecolor{codebg}{HTML}{F3F4F6}
+\definecolor{codegreen}{HTML}{22C55E}
+\definecolor{codered}{HTML}{EF4444}
+\definecolor{codepurple}{HTML}{8B5CF6}
+
+% ── Configuración de hyperlinks ─────────────────────────────────────────────
+\hypersetup{
+    colorlinks=true,
+    linkcolor=primaryblue,
+    urlcolor=primaryblue,
+    citecolor=primaryblue,
+    pdfauthor={Diego Tristán Limón},
+    pdftitle={Documentación del Proyecto ERP - Sistema de Gestión de Tickets},
+}
+
+% ── Configuración de código fuente ──────────────────────────────────────────
+\lstset{
+    backgroundcolor=\color{codebg},
+    basicstyle=\ttfamily\small,
+    breaklines=true,
+    captionpos=b,
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{primaryblue}\bfseries,
+    stringstyle=\color{codered},
+    frame=single,
+    framerule=0pt,
+    xleftmargin=1em,
+    framexleftmargin=1em,
+    numbers=left,
+    numberstyle=\tiny\color{gray},
+    numbersep=8pt,
+    tabsize=2,
+    showstringspaces=false,
+    rulecolor=\color{lightgray},
+}
+
+% ── Headers y Footers ──────────────────────────────────────────────────────
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\textcolor{darkgray}{Proyecto ERP - Sistema de Gestión de Tickets}}
+\fancyhead[R]{\small\textcolor{darkgray}{Ingeniería de Software}}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% ── Formato de títulos ──────────────────────────────────────────────────────
+\titleformat{\section}{\Large\bfseries\color{primaryblue}}{\thesection.}{0.5em}{}
+\titleformat{\subsection}{\large\bfseries\color{darkgray}}{\thesubsection.}{0.5em}{}
+\titleformat{\subsubsection}{\normalsize\bfseries\color{darkgray}}{\thesubsubsection.}{0.5em}{}
+
+% ============================================================================
+%  INICIO DEL DOCUMENTO
+% ============================================================================
+\begin{document}
+
+% ════════════════════════════════════════════════════════════════════════════
+%  PORTADA
+% ════════════════════════════════════════════════════════════════════════════
+\begin{titlepage}
+    \centering
+    \vspace*{1cm}
+
+    % Logo de la universidad (reemplazar con el logo real)
+    % \includegraphics[width=0.3\textwidth]{logo_universidad.png}\\[1cm]
+
+    {\Large\textbf{Universidad Tecnológica de Querétaro}}\\[0.3cm]
+    {\large Ingeniería en Gestión y Desarrollo de Software}\\[2cm]
+
+    {\LARGE\bfseries\color{primaryblue} Documentación del Proyecto ERP}\\[0.5cm]
+    {\Large Sistema de Gestión de Tickets con Arquitectura de Microservicios}\\[2cm]
+
+    {\large\textbf{Materia:} Seguridad en el Desarrollo de Aplicaciones}\\[0.5cm]
+    {\large\textbf{Docente:} Emmanuel Martínez Hernández}\\[0.5cm]
+    {\large\textbf{Alumno:} Diego Tristán Limón Hernández}\\[0.5cm]
+    {\large\textbf{Matrícula:} 2023371101}\\[2cm]
+
+    {\large Abril 2026}
+
+    \vfill
+\end{titlepage}
+
+% ════════════════════════════════════════════════════════════════════════════
+%  ÍNDICE
+% ════════════════════════════════════════════════════════════════════════════
+\newpage
+\tableofcontents
+\listoffigures
+\listoftables
+\newpage
+
+% ════════════════════════════════════════════════════════════════════════════
+%  1. INTRODUCCIÓN
+% ════════════════════════════════════════════════════════════════════════════
+\section{Introducción}
+
+En el contexto actual de desarrollo de software empresarial, los sistemas de planificación de recursos empresariales (ERP) representan una herramienta fundamental para la gestión eficiente de procesos organizacionales. El presente documento describe el desarrollo de un sistema ERP enfocado en la gestión de tickets y proyectos colaborativos, implementado utilizando una arquitectura de microservicios que garantiza la escalabilidad, mantenibilidad y seguridad de la aplicación. Este proyecto fue desarrollado como parte de la materia de Ingeniería de Software, aplicando los principios y patrones de diseño estudiados a lo largo del curso.
+
+El sistema desarrollado aborda la problemática de la gestión de tareas en equipos de trabajo, proporcionando un tablero Kanban interactivo, un sistema de grupos con gestión de permisos granulares, y un flujo completo de creación, asignación y seguimiento de tickets. La arquitectura del proyecto fue diseñada para separar las responsabilidades del frontend y el backend, utilizando Angular 20 como framework de presentación y Supabase como proveedor de servicios backend (Base de datos PostgreSQL, autenticación y API REST). Esta separación permite que cada capa evolucione de forma independiente, facilitando el mantenimiento y la adición de nuevas funcionalidades.
+
+Una de las decisiones arquitectónicas más significativas del proyecto fue la migración desde una comunicación directa con la base de datos a través del SDK de Supabase, hacia una arquitectura basada en un API Gateway que centraliza todas las operaciones CRUD mediante peticiones HTTP REST. Este cambio no solo alinea el proyecto con los estándares profesionales de desarrollo de microservicios, sino que también introduce capas de seguridad adicionales como Rate Limiting, validación de datos con JSON Schema, y un interceptor HTTP que gestiona automáticamente la autenticación y el manejo de errores.
+
+La implementación del sistema incluye validaciones de negocio críticas, como la obligatoriedad de fechas límite en los tickets, la restricción de movimiento de tickets en el tablero Kanban exclusivamente para el usuario asignado, y un sistema de autoasignación que mejora la experiencia del usuario. Estas características fueron desarrolladas en respuesta a requisitos específicos del proyecto, asegurando que el sistema cumpla con las reglas de negocio establecidas y proporcione una experiencia de usuario intuitiva y robusta.
+
+El presente documento está organizado en las siguientes secciones: primero se detalla el proceso de desarrollo de las vistas del frontend, incluyendo las interfaces de usuario y los componentes implementados. Posteriormente, se describe la arquitectura de microservicios del backend, explicando cada servicio implementado, su responsabilidad y la forma en que se comunican entre sí. Finalmente, se presentan las conclusiones del proyecto, la bibliografía consultada y los anexos con información técnica complementaria.
+
+% ════════════════════════════════════════════════════════════════════════════
+%  2. DESARROLLO
+% ════════════════════════════════════════════════════════════════════════════
+\section{Desarrollo}
+
+\subsection{Arquitectura General del Sistema}
+
+El sistema ERP fue desarrollado siguiendo una arquitectura de microservicios, donde el frontend (Angular 20) se comunica con el backend (Supabase PostgREST) a través de un API Gateway implementado como servicio Angular. Esta arquitectura permite desacoplar la lógica de presentación de la lógica de acceso a datos, facilitando la evolución independiente de cada componente.
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[
+        node distance=1.5cm and 2cm,
+        box/.style={rectangle, draw=primaryblue, fill=primaryblue!10, rounded corners, minimum width=3cm, minimum height=1cm, text centered, font=\small\bfseries},
+        service/.style={rectangle, draw=codepurple, fill=codepurple!10, rounded corners, minimum width=2.8cm, minimum height=0.9cm, text centered, font=\small},
+        db/.style={cylinder, draw=codegreen!70!black, fill=codegreen!10, minimum width=2cm, minimum height=1.2cm, text centered, font=\small\bfseries, shape border rotate=90, aspect=0.2},
+        arrow/.style={-{Stealth[length=3mm]}, thick, primaryblue},
+    ]
+
+    % Frontend
+    \node[box] (comp) {Componentes Angular};
+    \node[box, below=of comp] (perm) {PermissionService};
+    \node[box, below=of perm] (gateway) {API Gateway Service};
+
+    % Servicios del Gateway
+    \node[service, below left=1.2cm and 0.5cm of gateway] (rate) {Rate Limiter};
+    \node[service, below=of gateway] (schema) {JSON Schema Validator};
+    \node[service, below right=1.2cm and 0.5cm of gateway] (intercept) {Auth Interceptor};
+
+    % Backend
+    \node[box, below=3.5cm of gateway] (http) {HttpClient (REST)};
+    \node[db, below=of http] (db) {Supabase PostgreSQL};
+
+    % Flechas
+    \draw[arrow] (comp) -- (perm);
+    \draw[arrow] (perm) -- (gateway);
+    \draw[arrow] (gateway) -- (rate);
+    \draw[arrow] (gateway) -- (schema);
+    \draw[arrow] (gateway) -- (intercept);
+    \draw[arrow] (rate) -- (http);
+    \draw[arrow] (schema) -- (http);
+    \draw[arrow] (intercept) -- (http);
+    \draw[arrow] (http) -- (db);
+
+    % Labels
+    \node[right=0.3cm of comp, font=\scriptsize\itshape, text=gray] {Capa de Presentación};
+    \node[right=0.3cm of perm, font=\scriptsize\itshape, text=gray] {Capa de Lógica};
+    \node[right=0.3cm of gateway, font=\scriptsize\itshape, text=gray] {Capa de Gateway};
+    \node[right=0.3cm of http, font=\scriptsize\itshape, text=gray] {Capa de Transporte};
+    \node[right=0.3cm of db, font=\scriptsize\itshape, text=gray] {Capa de Datos};
+
+    \end{tikzpicture}
+    \caption{Diagrama de arquitectura general del sistema ERP.}
+    \label{fig:arquitectura}
+\end{figure}
+
+La Figura \ref{fig:arquitectura} muestra las cinco capas del sistema: la capa de presentación (componentes Angular), la capa de lógica de negocio (PermissionService), la capa de gateway (API Gateway con Rate Limiter, JSON Schema Validator y Auth Interceptor), la capa de transporte (HttpClient) y la capa de datos (Supabase PostgreSQL).
+
+% ── 2.2 Vistas del Frontend ─────────────────────────────────────────────────
+\subsection{Desarrollo de las Vistas del Frontend}
+
+El frontend fue desarrollado con \textbf{Angular 20} y la librería de componentes \textbf{PrimeNG}, proporcionando una interfaz moderna y profesional. A continuación se describen las principales vistas del sistema.
+
+\subsubsection{Vista de Login y Registro}
+
+La vista de autenticación permite a los usuarios iniciar sesión con sus credenciales existentes o registrar una nueva cuenta. El proceso de autenticación utiliza el SDK de Supabase Auth para gestionar tokens JWT de forma segura. El formulario incluye validaciones en tiempo real y mensajes de error descriptivos para guiar al usuario.
+
+% Insertar captura de pantalla del login cuando esté disponible
+% \begin{figure}[H]
+%     \centering
+%     \includegraphics[width=0.7\textwidth]{capturas/login.png}
+%     \caption{Vista de inicio de sesión del sistema ERP.}
+%     \label{fig:login}
+% \end{figure}
+
+\subsubsection{Vista de Selección de Grupo}
+
+Una vez autenticado, el usuario accede a la vista de selección de grupos, donde puede ver todos los grupos a los que pertenece. Cada grupo muestra su nombre, descripción, color identificativo y el número de miembros. Los usuarios con permisos de creación pueden crear nuevos grupos desde esta vista.
+
+% \begin{figure}[H]
+%     \centering
+%     \includegraphics[width=0.8\textwidth]{capturas/group_select.png}
+%     \caption{Vista de selección de grupos de trabajo.}
+%     \label{fig:group-select}
+% \end{figure}
+
+\subsubsection{Dashboard de Grupo}
+
+El dashboard de grupo proporciona una vista general del estado del grupo seleccionado, incluyendo estadísticas de tickets (pendientes, en progreso, completados), miembros activos y accesos rápidos al tablero Kanban, lista de tickets y gestión de miembros.
+
+\subsubsection{Tablero Kanban}
+
+El tablero Kanban es la vista principal de gestión de tickets. Presenta cinco columnas que representan los estados del flujo de trabajo: \textit{Pendiente}, \textit{En Progreso}, \textit{Revisión}, \textit{Hecho} y \textit{Bloqueado}. Los tickets se representan como tarjetas arrastrables que muestran el título, la prioridad (indicada con una barra de color), la fecha límite y el usuario asignado.
+
+% \begin{figure}[H]
+%     \centering
+%     \includegraphics[width=0.95\textwidth]{capturas/kanban.png}
+%     \caption{Tablero Kanban con columnas de estados y tickets arrastrables.}
+%     \label{fig:kanban}
+% \end{figure}
+
+Las características implementadas en el tablero Kanban incluyen:
+
+\begin{itemize}[noitemsep]
+    \item \textbf{Drag \& Drop restringido:} Solo el usuario asignado al ticket puede arrastrarlo entre columnas. Los tickets no asignados al usuario actual se muestran con opacidad reducida y cursor de ``no permitido''.
+    \item \textbf{Filtros rápidos:} Botones para filtrar por ``Mis tickets'', ``Sin asignar'' y ``Alta prioridad''.
+    \item \textbf{Validación de fechas obligatorias:} Al crear un ticket, la fecha límite es obligatoria y no puede ser una fecha pasada.
+    \item \textbf{Autoasignación:} Botón ``Asignarme a mí'' para asignarse rápidamente como responsable del ticket.
+    \item \textbf{Indicadores visuales:} Tickets con fecha vencida se marcan en rojo; tickets sin fecha muestran una advertencia.
+\end{itemize}
+
+\subsubsection{Detalle de Ticket}
+
+La vista de detalle permite ver y editar toda la información de un ticket específico. Incluye un sistema de pestañas con sección de comentarios e historial de cambios, proporcionando trazabilidad completa de las modificaciones realizadas.
+
+% \begin{figure}[H]
+%     \centering
+%     \includegraphics[width=0.85\textwidth]{capturas/ticket_detail.png}
+%     \caption{Vista de detalle de ticket con comentarios e historial.}
+%     \label{fig:ticket-detail}
+% \end{figure}
+
+\subsubsection{Gestión de Usuarios y Permisos}
+
+El sistema incluye vistas de administración para la gestión de usuarios (crear, editar, eliminar) y un gestor de permisos granular que permite asignar permisos específicos a nivel global y por grupo. Los permisos cubren operaciones sobre tickets (crear, editar, eliminar, asignar, cambiar estado, comentar), grupos (crear, editar, eliminar, agregar/remover miembros) y usuarios (crear, editar, eliminar, gestionar permisos).
+
+% ── 2.3 Microservicios Backend ──────────────────────────────────────────────
+\subsection{Desarrollo de los Microservicios Backend}
+
+La capa de backend está compuesta por cuatro microservicios implementados como servicios Angular inyectables, cada uno con una responsabilidad única y bien definida. Esta separación sigue el principio de responsabilidad única (SRP) de los patrones SOLID.
+
+\subsubsection{API Gateway Service (\texttt{api-gateway.service.ts})}
+
+El API Gateway es el punto de entrada centralizado para todas las operaciones de datos. Actúa como intermediario entre la lógica de negocio y la API REST de Supabase (PostgREST), encapsulando la construcción de URLs, parámetros de consulta y headers HTTP.
+
+\begin{lstlisting}[language=Java, caption={Métodos principales del API Gateway Service.}, label={lst:api-gateway}]
+// Operaciones CRUD centralizadas
+select<T>(resource, options)   // GET  - Leer datos
+insert<T>(resource, data)      // POST - Crear datos
+update<T>(resource, data)      // PATCH - Actualizar datos
+delete(resource, filters)      // DELETE - Eliminar datos
+upsert<T>(resource, data)      // POST con merge-duplicates
+insertMany<T>(resource, rows)  // POST batch
+\end{lstlisting}
+
+El API Gateway integra automáticamente las capas de Rate Limiting y validación de JSON Schema antes de cada operación de escritura, garantizando que solo datos válidos y dentro de los límites permitidos lleguen al servidor.
+
+\begin{table}[H]
+    \centering
+    \caption{Operaciones HTTP mapeadas por el API Gateway.}
+    \label{tab:api-operations}
+    \begin{tabular}{@{}llll@{}}
+        \toprule
+        \textbf{Método} & \textbf{HTTP} & \textbf{Endpoint} & \textbf{Descripción} \\
+        \midrule
+        \texttt{select()} & GET & \texttt{/rest/v1/\{tabla\}} & Lectura con filtros PostgREST \\
+        \texttt{insert()} & POST & \texttt{/rest/v1/\{tabla\}} & Inserción con validación \\
+        \texttt{update()} & PATCH & \texttt{/rest/v1/\{tabla\}} & Actualización parcial \\
+        \texttt{delete()} & DELETE & \texttt{/rest/v1/\{tabla\}} & Eliminación con filtros \\
+        \texttt{upsert()} & POST & \texttt{/rest/v1/\{tabla\}} & Insert o update en conflicto \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\subsubsection{Rate Limiter Service (\texttt{rate-limiter.service.ts})}
+
+El servicio de Rate Limiting implementa el algoritmo de \textit{Sliding Window} (ventana deslizante) para controlar la cantidad de peticiones por endpoint en una ventana de tiempo configurable. Este mecanismo protege al backend contra abusos, ataques de denegación de servicio (DoS) y uso excesivo de recursos.
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[
+        node distance=0.8cm,
+        req/.style={circle, draw=primaryblue, fill=primaryblue!20, minimum size=0.6cm, font=\tiny},
+        blocked/.style={circle, draw=codered, fill=codered!20, minimum size=0.6cm, font=\tiny},
+    ]
+    % Timeline
+    \draw[-{Stealth}, thick] (0,0) -- (12,0) node[right] {\small Tiempo};
+    \draw[dashed, gray] (3,0.5) -- (3,-0.5) node[below] {\tiny t=0s};
+    \draw[dashed, gray] (9,0.5) -- (9,-0.5) node[below] {\tiny t=60s};
+
+    % Window
+    \draw[thick, primaryblue!50, fill=primaryblue!5] (3,-0.3) rectangle (9,1.5);
+    \node[above, font=\small\bfseries, primaryblue] at (6,1.5) {Ventana deslizante (60s)};
+
+    % Requests
+    \foreach \x/\n in {3.5/1, 4.2/2, 5.0/3, 5.8/4, 6.5/5} {
+        \node[req] at (\x, 0.8) {\n};
+    }
+    \node[blocked] at (7.5, 0.8) {6};
+    \node[font=\tiny, codered] at (7.5, 0.2) {Bloqueado};
+
+    \end{tikzpicture}
+    \caption{Funcionamiento del algoritmo de Sliding Window para Rate Limiting.}
+    \label{fig:rate-limiting}
+\end{figure}
+
+\begin{table}[H]
+    \centering
+    \caption{Configuración de límites por tipo de operación.}
+    \label{tab:rate-limits}
+    \begin{tabular}{@{}lcc@{}}
+        \toprule
+        \textbf{Tipo de Operación} & \textbf{Máximo Peticiones} & \textbf{Ventana} \\
+        \midrule
+        Lectura (\texttt{read})    & 60 & 60 segundos \\
+        Escritura (\texttt{write}) & 20 & 60 segundos \\
+        Autenticación (\texttt{auth}) & 5 & 60 segundos \\
+        Eliminación (\texttt{delete}) & 10 & 60 segundos \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+Cuando se excede el límite, el servicio lanza un error \texttt{RateLimitExceededError} que incluye el tiempo de espera necesario antes de poder realizar una nueva petición, proporcionando retroalimentación útil al usuario.
+
+\subsubsection{JSON Schema Validator Service (\texttt{json-schema-validator.service.ts})}
+
+El servicio de validación de JSON Schema garantiza la integridad de los datos antes de que sean enviados al backend. Define esquemas de validación para cada entidad del sistema, verificando tipos de datos, campos requeridos, longitudes mínimas y máximas, formatos (email, UUID, date-time) y valores permitidos (enums).
+
+\begin{lstlisting}[language=Java, caption={Ejemplo de JSON Schema para la entidad Ticket.}, label={lst:schema}]
+TICKET_SCHEMA = {
+  properties: {
+    titulo:      { type: 'string', minLength: 3, maxLength: 200 },
+    status:      { type: 'string', enum: ['pendiente',
+                   'en_progreso', 'revision', 'hecho',
+                   'bloqueado'] },
+    prioridad:   { type: 'string', enum: ['critica', 'alta',
+                   'media_alta', 'media', 'media_baja',
+                   'baja', 'minima'] },
+    fecha_limite: { type: 'string', format: 'date-time' },
+    creado_por:  { type: 'string', format: 'uuid' },
+  },
+  required: ['group_id', 'titulo', 'status', 'prioridad',
+             'creado_por', 'fecha_limite'],
+}
+\end{lstlisting}
+
+\begin{table}[H]
+    \centering
+    \caption{Schemas definidos en el sistema.}
+    \label{tab:schemas}
+    \begin{tabular}{@{}llp{7cm}@{}}
+        \toprule
+        \textbf{Schema} & \textbf{Entidad} & \textbf{Validaciones principales} \\
+        \midrule
+        \texttt{ticket} & Ticket (crear) & Título min 3 chars, status y prioridad como enum, fecha en formato ISO, UUID para creador \\
+        \texttt{ticket-update} & Ticket (actualizar) & Validación parcial, mismos tipos pero sin campos requeridos \\
+        \texttt{group} & Grupo & Nombre min 2 chars, color en formato hex (\texttt{\#RRGGBB}) \\
+        \texttt{profile} & Usuario & Nombre y usuario min 2 chars, teléfono max 20 chars \\
+        \texttt{comment} & Comentario & Texto obligatorio min 1 char, ticket\_id y user\_id como UUID \\
+        \texttt{group-member} & Miembro & group\_id y user\_id obligatorios como UUID \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\subsubsection{Auth Interceptor (\texttt{auth.interceptor.ts})}
+
+El interceptor HTTP es un componente funcional de Angular que se ejecuta automáticamente en cada petición HTTP saliente. Sus tres responsabilidades principales son la inyección de credenciales, el manejo de errores y el logging.
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[
+        node distance=1.2cm,
+        box/.style={rectangle, draw=primaryblue, fill=primaryblue!10, rounded corners, minimum width=4cm, minimum height=0.8cm, text centered, font=\small},
+        decision/.style={diamond, draw=codepurple, fill=codepurple!10, minimum width=2.5cm, minimum height=1.5cm, text centered, font=\small, aspect=2},
+        arrow/.style={-{Stealth[length=2.5mm]}, thick},
+    ]
+
+    \node[box] (req) {Peticion HTTP saliente};
+    \node[decision, below=of req] (check) {URL de Supabase?};
+    \node[box, below left=1.5cm and 2cm of check] (pass) {Pasar sin modificar};
+    \node[box, below right=1.5cm and 0cm of check] (inject) {Inyectar apikey + Bearer token};
+    \node[box, below=of inject] (send) {Enviar al servidor};
+    \node[decision, below=of send] (error) {Error HTTP?};
+    \node[box, below left=1.5cm and 1.5cm of error] (handle) {Manejar error (401--Login, 429--Rate limit)};
+    \node[box, below right=1.5cm and 0cm of error] (success) {Retornar respuesta};
+
+    \draw[arrow] (req) -- (check);
+    \draw[arrow] (check) -- node[above left] {No} (pass);
+    \draw[arrow] (check) -- node[above right] {Si} (inject);
+    \draw[arrow] (inject) -- (send);
+    \draw[arrow] (send) -- (error);
+    \draw[arrow] (error) -- node[above left] {Si} (handle);
+    \draw[arrow] (error) -- node[above right] {No} (success);
+
+    \end{tikzpicture}
+    \caption{Diagrama de flujo del Auth Interceptor.}
+    \label{fig:interceptor}
+\end{figure}
+
+Los headers inyectados automáticamente son:
+\begin{itemize}[noitemsep]
+    \item \texttt{apikey}: Clave pública del proyecto Supabase para identificar la aplicación.
+    \item \texttt{Authorization}: Token Bearer JWT obtenido de la sesión del usuario.
+    \item \texttt{Content-Type}: Establecido como \texttt{application/json}.
+    \item \texttt{Prefer}: Header de PostgREST para configurar el formato de retorno.
+\end{itemize}
+
+% ── 2.4 Comunicación entre servicios ────────────────────────────────────────
+\subsection{Comunicación entre Microservicios}
+
+La comunicación entre los microservicios sigue un flujo secuencial bien definido. A continuación se describe el proceso completo cuando un usuario crea un ticket desde el frontend.
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[
+        node distance=0.7cm,
+        flowstep/.style={rectangle, draw=primaryblue, fill=primaryblue!8, rounded corners=3pt, minimum width=11cm, minimum height=0.7cm, text centered, font=\small},
+        arrow/.style={-{Stealth[length=2.5mm]}, thick, primaryblue},
+    ]
+
+    \node[flowstep] (s1) {\textbf{1.} Usuario hace clic en ``Crear Ticket'' en el Kanban};
+    \node[flowstep, below=of s1] (s2) {\textbf{2.} \texttt{kanban.ts} valida: tiene titulo, tiene fecha, fecha es futura};
+    \node[flowstep, below=of s2] (s3) {\textbf{3.} \texttt{PermissionService.createTicket()} prepara los datos};
+    \node[flowstep, below=of s3] (s4) {\textbf{4.} \texttt{ApiGateway.insert()} -- Rate Limiter verifica: menos de 20 writes/min};
+    \node[flowstep, below=of s4] (s5) {\textbf{5.} JSON Schema Validator verifica: datos correctos};
+    \node[flowstep, below=of s5] (s6) {\textbf{6.} \texttt{HttpClient.post()} -- Auth Interceptor agrega headers};
+    \node[flowstep, below=of s6] (s7) {\textbf{7.} Peticion HTTP POST -- Supabase REST API -- PostgreSQL};
+    \node[flowstep, below=of s7] (s8) {\textbf{8.} Respuesta regresa -- Ticket se agrega al estado local (signals)};
+
+    \draw[arrow] (s1) -- (s2);
+    \draw[arrow] (s2) -- (s3);
+    \draw[arrow] (s3) -- (s4);
+    \draw[arrow] (s4) -- (s5);
+    \draw[arrow] (s5) -- (s6);
+    \draw[arrow] (s6) -- (s7);
+    \draw[arrow] (s7) -- (s8);
+
+    \end{tikzpicture}
+    \caption{Flujo completo de creación de un ticket desde el frontend al backend.}
+    \label{fig:flujo-ticket}
+\end{figure}
+
+\subsection{Flujo de Solicitud y Respuesta Frontend-Backend}
+
+El flujo de comunicación entre el frontend y el backend se realiza mediante peticiones HTTP RESTful. El frontend nunca accede directamente a la base de datos; todas las operaciones pasan por el API Gateway, que a su vez utiliza HttpClient de Angular para comunicarse con la API REST de Supabase (PostgREST).
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[
+        node distance=2cm and 3cm,
+        actor/.style={rectangle, draw=primaryblue, fill=primaryblue!10, rounded corners, minimum width=2.2cm, minimum height=1cm, text centered, font=\small\bfseries},
+        arrow/.style={-{Stealth[length=3mm]}, thick},
+        note/.style={font=\scriptsize\itshape, text=gray},
+    ]
+
+    % Actors
+    \node[actor] (user) {Usuario};
+    \node[actor, right=of user] (comp) {Componente};
+    \node[actor, right=of comp] (perm) {Permission Service};
+    \node[actor, right=of perm] (gw) {API Gateway};
+    \node[actor, right=of gw] (api) {Supabase REST};
+
+    % Request flow (top)
+    \draw[arrow, primaryblue] (user.east) -- (comp.west) node[midway, above, note] {click};
+    \draw[arrow, primaryblue] (comp.east) -- (perm.west) node[midway, above, note] {metodo()};
+    \draw[arrow, primaryblue] (perm.east) -- (gw.west) node[midway, above, note] {api.select()};
+    \draw[arrow, primaryblue] (gw.east) -- (api.west) node[midway, above, note] {HTTP GET};
+
+    % Response flow (bottom)
+    \draw[arrow, codegreen!70!black] (api.south west) -- ++(0,-0.5) -| (gw.south) node[near start, below, note] {JSON};
+    \draw[arrow, codegreen!70!black] (gw.south west) -- ++(0,-0.5) -| (perm.south) node[near start, below, note] {data};
+    \draw[arrow, codegreen!70!black] (perm.south west) -- ++(0,-0.5) -| (comp.south) node[near start, below, note] {signals};
+    \draw[arrow, codegreen!70!black] (comp.south west) -- ++(0,-0.5) -| (user.south) node[near start, below, note] {UI};
+
+    \end{tikzpicture}
+    \caption{Flujo de solicitud (azul) y respuesta (verde) entre las capas del sistema.}
+    \label{fig:request-response}
+\end{figure}
+
+\subsection{Migración de Arquitectura: Antes vs Después}
+
+Un aspecto fundamental del proyecto fue la migración desde una arquitectura monolítica (acceso directo a la base de datos) hacia una arquitectura de microservicios (comunicación REST). La Tabla \ref{tab:migracion} resume las diferencias principales.
+
+\begin{table}[H]
+    \centering
+    \caption{Comparación entre la arquitectura anterior y la actual.}
+    \label{tab:migracion}
+    \begin{tabular}{@{}p{3.5cm}p{5cm}p{5cm}@{}}
+        \toprule
+        \textbf{Aspecto} & \textbf{Antes (SDK directo)} & \textbf{Después (Microservicios)} \\
+        \midrule
+        Acceso a datos & \texttt{supabase.from('tabla').select()} & \texttt{apiGateway.select('tabla')} \\
+        Autenticación & Manual en cada llamada & Automática vía Interceptor HTTP \\
+        Validación & Sin validación de datos & JSON Schema en cada escritura \\
+        Rate Limiting & Sin protección & Sliding Window por endpoint \\
+        Manejo de errores & Try/catch individual & Centralizado en el Interceptor \\
+        Trazabilidad & Sin logging & Logging completo con colores \\
+        Acoplamiento & Alto (SDK en cada servicio) & Bajo (solo API Gateway) \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\subsection{Tecnologías Utilizadas}
+
+\begin{table}[H]
+    \centering
+    \caption{Stack tecnológico del proyecto.}
+    \label{tab:tecnologias}
+    \begin{tabular}{@{}llp{7cm}@{}}
+        \toprule
+        \textbf{Tecnología} & \textbf{Versión} & \textbf{Uso} \\
+        \midrule
+        Angular & 20.0.0 & Framework frontend, componentes, routing, signals \\
+        PrimeNG & 19.x & Librería de componentes UI (botones, tablas, diálogos) \\
+        TypeScript & 5.8 & Lenguaje tipado para lógica del frontend \\
+        Supabase & -- & Backend-as-a-Service (PostgreSQL, Auth, REST API) \\
+        PostgREST & -- & API REST auto-generada sobre PostgreSQL \\
+        RxJS & 7.x & Programación reactiva, observables HTTP \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+% ════════════════════════════════════════════════════════════════════════════
+%  3. CONCLUSIÓN
+% ════════════════════════════════════════════════════════════════════════════
+\section{Conclusión}
+
+El desarrollo del sistema ERP de gestión de tickets representó una oportunidad significativa para aplicar de manera práctica los principios de ingeniería de software estudiados a lo largo del curso. La migración desde una arquitectura que utilizaba acceso directo a la base de datos hacia una arquitectura basada en microservicios con API Gateway, Rate Limiting, validación de JSON Schema e interceptores HTTP, permitió comprender en profundidad las ventajas y retos que implica el diseño de sistemas distribuidos en un entorno real de desarrollo.
+
+La implementación del API Gateway como punto de entrada centralizado demostró ser una pieza fundamental en la arquitectura del sistema. Al encapsular todas las operaciones de acceso a datos en un único servicio, se logró reducir significativamente el acoplamiento entre la capa de presentación y la capa de datos. Esto no solo facilita el mantenimiento y la evolución del código, sino que también permite agregar nuevos microservicios (como un servicio de notificaciones o un servicio de reportes) sin necesidad de modificar los componentes existentes, lo cual es una de las principales ventajas de la arquitectura de microservicios.
+
+Las capas de seguridad implementadas --- Rate Limiting y JSON Schema Validation --- aportan un nivel profesional al proyecto que va más allá de un MVP (Producto Mínimo Viable). El Rate Limiter protege el sistema contra uso abusivo, mientras que el JSON Schema Validator garantiza la integridad de los datos antes de que estos lleguen al backend. Estas prácticas son estándar en la industria para sistemas en producción y su implementación en este proyecto proporciona una base sólida de conocimiento aplicable en futuros desarrollos profesionales.
+
+Finalmente, las mejoras en la lógica de negocio --- como la validación obligatoria de fechas, la restricción de movimiento de tickets solo por el usuario asignado, y el sistema de permisos granulares --- demuestran que un sistema ERP requiere no solo una arquitectura técnica sólida, sino también reglas de negocio bien definidas que guíen el comportamiento del sistema. La combinación de buenas prácticas de ingeniería de software con requisitos de negocio claros resulta en un sistema que es tanto técnicamente robusto como funcionalmente útil para los usuarios finales.
+
+% ════════════════════════════════════════════════════════════════════════════
+%  4. BIBLIOGRAFÍA
+% ════════════════════════════════════════════════════════════════════════════
+\newpage
+\section{Bibliografía}
+
+\begin{enumerate}[label={[\arabic*]}]
+    \item Angular Team. (2026). \textit{Angular Documentation: HTTP Client and Interceptors}. Google. Recuperado de \url{https://angular.dev/guide/http}
+
+    \item Supabase Inc. (2026). \textit{Supabase Documentation: RESTful API with PostgREST}. Recuperado de \url{https://supabase.com/docs/guides/api}
+
+    \item Newman, S. (2021). \textit{Building Microservices: Designing Fine-Grained Systems} (2nd ed.). O'Reilly Media. ISBN: 978-1492034025.
+
+    \item Richardson, C. (2018). \textit{Microservices Patterns: With Examples in Java}. Manning Publications. ISBN: 978-1617294549.
+
+    \item PrimeNG Team. (2026). \textit{PrimeNG: UI Component Library for Angular}. PrimeTek. Recuperado de \url{https://primeng.org/}
+\end{enumerate}
+
+% ════════════════════════════════════════════════════════════════════════════
+%  5. APÉNDICE / ANEXOS
+% ════════════════════════════════════════════════════════════════════════════
+\newpage
+\section{Apéndice}
+
+\subsection{Anexo A: Estructura de Archivos del Proyecto}
+
+\begin{lstlisting}[caption={Estructura de directorios del proyecto ERP.}, label={lst:estructura}]
+src/app/
+|-- core/
+|   |-- api-gateway.service.ts     # Microservicio: API Gateway
+|   |-- rate-limiter.service.ts    # Microservicio: Rate Limiter
+|   |-- json-schema-validator.service.ts  # Microservicio: Validador
+|   |-- auth.interceptor.ts       # Interceptor HTTP
+|
+|-- services/
+|   |-- permission.service.ts     # Logica de negocio central
+|   |-- supabase.service.ts       # Inicializacion Supabase Auth
+|
+|-- pages/
+|   |-- tickets/
+|   |   |-- kanban/kanban.ts      # Vista Tablero Kanban
+|   |   |-- ticket-detail/        # Vista Detalle de Ticket
+|   |   |-- ticket-list/          # Vista Lista de Tickets
+|   |-- admin/
+|   |   |-- user-management/      # Gestion de Usuarios
+|   |   |-- permissions-manager/  # Gestion de Permisos
+|   |-- groups/                   # Gestion de Grupos
+|   |-- auth/                     # Login y Registro
+|
+|-- environments/
+    |-- environment.ts            # Config desarrollo (API URLs)
+    |-- environment.prod.ts       # Config produccion
+\end{lstlisting}
+
+\subsection{Anexo B: Esquema de la Base de Datos}
+
+\begin{table}[H]
+    \centering
+    \caption{Tablas principales de la base de datos PostgreSQL.}
+    \label{tab:db-schema}
+    \begin{tabular}{@{}llp{7cm}@{}}
+        \toprule
+        \textbf{Tabla} & \textbf{Clave Primaria} & \textbf{Descripción} \\
+        \midrule
+        \texttt{profiles} & \texttt{id} (UUID) & Perfiles de usuario con nombre, teléfono, permisos globales \\
+        \texttt{groups} & \texttt{id} (UUID) & Grupos de trabajo con nombre, color, modelo LLM \\
+        \texttt{group\_members} & \texttt{(group\_id, user\_id)} & Relación muchos-a-muchos con permisos por grupo \\
+        \texttt{tickets} & \texttt{id} (UUID) & Tickets con título, estado, prioridad, usuario asignado, fecha límite \\
+        \texttt{ticket\_comments} & \texttt{id} (UUID) & Comentarios asociados a tickets \\
+        \texttt{ticket\_history} & \texttt{id} (UUID) & Historial de cambios de tickets (campo, valor anterior, valor nuevo) \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\subsection{Anexo C: Lista de Permisos del Sistema}
+
+\begin{table}[H]
+    \centering
+    \caption{Permisos granulares disponibles en el sistema.}
+    \label{tab:permisos}
+    \begin{tabular}{@{}lll@{}}
+        \toprule
+        \textbf{Módulo} & \textbf{Permiso} & \textbf{Descripción} \\
+        \midrule
+        Tickets & \texttt{ticket:create} & Crear nuevos tickets \\
+        & \texttt{ticket:edit} & Editar tickets existentes \\
+        & \texttt{ticket:delete} & Eliminar tickets \\
+        & \texttt{ticket:view} & Ver tickets \\
+        & \texttt{ticket:assign} & Asignar tickets a usuarios \\
+        & \texttt{ticket:change\_status} & Cambiar estado de tickets \\
+        & \texttt{ticket:comment} & Agregar comentarios \\
+        \midrule
+        Grupos & \texttt{group:create} & Crear grupos \\
+        & \texttt{group:edit} & Editar grupos \\
+        & \texttt{group:delete} & Eliminar grupos \\
+        & \texttt{group:add\_member} & Agregar miembros \\
+        & \texttt{group:remove\_member} & Remover miembros \\
+        \midrule
+        Usuarios & \texttt{user:create} & Crear usuarios \\
+        & \texttt{user:edit} & Editar usuarios \\
+        & \texttt{user:delete} & Eliminar usuarios \\
+        & \texttt{user:manage\_permissions} & Gestionar permisos \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\end{document}

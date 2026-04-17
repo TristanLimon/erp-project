@@ -44,3 +44,11 @@ body {
 .p-select { border-radius: 10px !important; }
 .p-datatable .p-datatable-thead > tr > th { background: #f8f9fc !important; font-weight: 700 !important; font-size: .8rem !important; text-transform: uppercase; letter-spacing: .05em; color: var(--text-muted) !important; border-bottom: 2px solid var(--border) !important; }
 .p-toast { font-family: 'Plus Jakarta Sans', sans-serif !important; }
+
+/* ── Forzar modo claro en todas las tablas PrimeNG ── */
+.p-datatable,
+.p-datatable .p-datatable-table { background: #fff !important; color: #0f0a2e !important; }
+.p-datatable .p-datatable-tbody > tr { background: #fff !important; color: #0f0a2e !important; border-bottom: 1px solid #f3f4f6 !important; }
+.p-datatable .p-datatable-tbody > tr:hover { background: #f8f9fc !important; }
+.p-datatable .p-datatable-tbody > tr > td { color: #0f0a2e !important; border: none !important; }
+.p-datatable-wrapper { border-radius: 10px; overflow: hidden; border: 1px solid var(--border); }

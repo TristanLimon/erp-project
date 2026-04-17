@@ -1,15 +1,7 @@
-/**
- * PermissionService — integración con Supabase
- *
- * Soporta dos capas de permisos:
- *   1. Globales  → almacenados en profiles.permissions  (user:manage_permissions, group:create, etc.)
- *   2. Por grupo → almacenados en group_members.permissions
- *
- * has(p) retorna true si el usuario tiene el permiso en CUALQUIERA de las dos capas.
- * Esto permite que "Gestión Usuarios" y "Admin Grupos" funcionen sin grupo activo.
- */
-import { Injectable, signal, computed } from '@angular/core';
+
+import { Injectable, signal, computed, inject } from '@angular/core';
 import { SupabaseService } from './supabase.service';
+import { ApiGatewayService } from '../core/api-gateway.service';
 
 export const ALL_PERMISSIONS = [
   'ticket:create', 'ticket:edit', 'ticket:delete', 'ticket:view',
@@ -101,7 +93,10 @@ function mapTicket(row: any): Ticket {
 
 @Injectable({ providedIn: 'root' })
 export class PermissionService {
+  /** Supabase SDK — ahora SOLO para auth (login, signup, signOut, getSession) */
   private sb!: SupabaseService['client'];
+  /** API Gateway — para TODAS las operaciones CRUD (REST API) */
+  private api = inject(ApiGatewayService);
 
   private _users    = signal<AppUser[]>([]);
   private _groups   = signal<Group[]>([]);
@@ -122,6 +117,7 @@ export class PermissionService {
 
   constructor(private supabase: SupabaseService) {
     this.sb = supabase.client;
+    // Verificar sesión existente al inicio (usa Supabase Auth SDK)
     this.sb.auth.getSession().then(({ data }) => {
       if (data.session?.user) {
         this.loadUserData(data.session.user.id, data.session.user.email ?? '');
@@ -129,7 +125,7 @@ export class PermissionService {
     });
   }
 
-  // ── AUTH ──────────────────────────────────────────────────────────────────
+  // ── AUTH (sigue usando Supabase Auth SDK) ──────────────────────────────────
 
   async login(email: string, password: string): Promise<AppUser | null> {
     const { data, error } = await this.sb.auth.signInWithPassword({ email, password });
@@ -144,11 +140,14 @@ export class PermissionService {
     });
     if (error) return { ok: false, msg: error.message };
     if (!data.user) return { ok: false, msg: 'Error al crear usuario.' };
-    await this.sb.from('profiles').update({
+
+    // Actualizar perfil via API Gateway
+    await this.api.update('profiles', {
       usuario: params.usuario, nombre_completo: params.nombreCompleto,
       telefono: params.telefono ?? '', direccion: params.direccion ?? '',
       fecha_nacimiento: params.fechaNacimiento ?? '',
-    }).eq('id', data.user.id);
+    }, { id: `eq.${data.user.id}` }, 'profile');
+
     return { ok: true, msg: 'Cuenta creada exitosamente.' };
   }
 
@@ -161,29 +160,43 @@ export class PermissionService {
     this._users.set([]); this._groups.set([]); this._tickets.set([]);
   }
 
-  // ── Carga de datos ────────────────────────────────────────────────────────
+  // ── Carga de datos (ahora via API Gateway) ────────────────────────────────
 
   async loadUserData(userId: string, email: string): Promise<AppUser | null> {
-    const { data: profile } = await this.sb.from('profiles').select('*').eq('id', userId).single();
-    if (!profile) return null;
+    try {
+      const profile = await this.api.select('profiles', {
+        select: '*',
+        filters: { id: `eq.${userId}` },
+        single: true,
+      });
+      if (!profile) return null;
 
-    const user: AppUser = mapProfile({ ...profile, email });
-    this._currentUser.set(user);
+      const user: AppUser = mapProfile({ ...profile, email });
+      this._currentUser.set(user);
 
-    // Cargar permisos GLOBALES desde el perfil
-    this._globalPermissions.set(user.permissions);
+      // Cargar permisos GLOBALES desde el perfil
+      this._globalPermissions.set(user.permissions);
 
-    await this.loadGroupsAndMembers();
-    await this.loadAllUsers();
-    return user;
+      await this.loadGroupsAndMembers();
+      await this.loadAllUsers();
+      return user;
+    } catch (err) {
+      console.error('[PermissionService] Error cargando datos del usuario:', err);
+      return null;
+    }
   }
 
   private async loadGroupsAndMembers() {
     const uid = this._currentUser()?.id;
     if (!uid) return;
-    const { data: allMembers } = await this.sb.from('group_members').select('group_id, user_id, permissions');
-    const { data: allGroups }  = await this.sb.from('groups').select('*');
+
+    const [allMembers, allGroups] = await Promise.all([
+      this.api.select<any[]>('group_members', { select: 'group_id,user_id,permissions' }),
+      this.api.select<any[]>('groups', { select: '*' }),
+    ]);
+
     if (!allGroups || !allMembers) return;
+
     const groups: Group[] = allGroups.map(g => {
       const memberIds = (allMembers ?? []).filter(m => m.group_id === g.id).map(m => m.user_id);
       return mapGroup(g, memberIds);
@@ -192,9 +205,10 @@ export class PermissionService {
   }
 
   private async loadAllUsers() {
-    const { data } = await this.sb.from('profiles').select('*');
-    if (!data) return;
-    const users: AppUser[] = data.map(p =>
+    const profiles = await this.api.select<any[]>('profiles', { select: '*' });
+    if (!profiles) return;
+
+    const users: AppUser[] = profiles.map(p =>
       mapProfile({ ...p, email: p.id === this._currentUser()?.id ? this._currentUser()?.email : '' })
     );
     this._users.set(users);
@@ -206,8 +220,18 @@ export class PermissionService {
     this._currentGroupId.set(groupId);
     const uid = this._currentUser()?.id;
     if (!uid) return;
-    const { data } = await this.sb.from('group_members').select('permissions').eq('group_id', groupId).eq('user_id', uid).single();
-    this._activePermissions.set((data?.permissions ?? []) as Permission[]);
+
+    try {
+      const data = await this.api.select('group_members', {
+        select: 'permissions',
+        filters: { group_id: `eq.${groupId}`, user_id: `eq.${uid}` },
+        single: true,
+      });
+      this._activePermissions.set((data?.permissions ?? []) as Permission[]);
+    } catch {
+      this._activePermissions.set([]);
+    }
+
     await this.loadTickets(groupId);
   }
 
@@ -239,10 +263,15 @@ export class PermissionService {
   ticketsByGroup(groupId: string): Ticket[] { return this._tickets().filter(t => t.groupId === groupId); }
   getUserById(id: string): AppUser | undefined { return this._users().find(u => u.id === id); }
 
-  // ── Tickets ───────────────────────────────────────────────────────────────
+  // ── Tickets (via API Gateway) ─────────────────────────────────────────────
 
   private async loadTickets(groupId: string) {
-    const { data } = await this.sb.from('tickets').select(`*, ticket_comments(*), ticket_history(*)`).eq('group_id', groupId).order('created_at', { ascending: false });
+    const data = await this.api.select<any[]>('tickets', {
+      select: '*,ticket_comments(*),ticket_history(*)',
+      filters: { group_id: `eq.${groupId}` },
+      order: 'created_at.desc',
+    });
+
     if (!data) return;
     this._tickets.update(existing => {
       const otherGroups = existing.filter(t => t.groupId !== groupId);
@@ -251,12 +280,15 @@ export class PermissionService {
   }
 
   async createTicket(data: Omit<Ticket, 'id' | 'fechaCreacion' | 'comments' | 'history'>): Promise<Ticket> {
-    const { data: row, error } = await this.sb.from('tickets').insert({
+    const insertData = {
       group_id: data.groupId, titulo: data.titulo, descripcion: data.descripcion,
       status: data.status, prioridad: data.prioridad, asignado_a: data.asignadoA,
       creado_por: data.creadoPor, fecha_limite: data.fechaLimite,
-    }).select().single();
-    if (error || !row) throw new Error(error?.message ?? 'Error creando ticket');
+    };
+
+    // Validar con JSON Schema + enviar via API Gateway
+    const row = await this.api.insert('tickets', insertData, 'ticket');
+
     const ticket = mapTicket({ ...row, ticket_comments: [], ticket_history: [] });
     this._tickets.update(ts => [...ts, ticket]);
     return ticket;
@@ -272,8 +304,8 @@ export class PermissionService {
     if (changes.fechaLimite !== undefined) updateData.fecha_limite = changes.fechaLimite;
     updateData.updated_at = new Date().toISOString();
 
-    const { error } = await this.sb.from('tickets').update(updateData).eq('id', id);
-    if (error) throw new Error(error.message);
+    // Actualizar via API Gateway con validación de schema
+    await this.api.update('tickets', updateData, { id: `eq.${id}` }, 'ticket-update');
 
     const original = this._tickets().find(t => t.id === id);
     if (original) {
@@ -281,34 +313,44 @@ export class PermissionService {
         .filter(f => !['comments', 'history', 'id', 'groupId', 'fechaCreacion'].includes(f))
         .filter(f => String((original as any)[f]) !== String((changes as any)[f]))
         .map(f => ({ ticket_id: id, user_id: changedBy.id, user_name: changedBy.nombreCompleto, field: f, old_value: String((original as any)[f] ?? ''), new_value: String((changes as any)[f] ?? '') }));
-      if (historyRows.length > 0) await this.sb.from('ticket_history').insert(historyRows);
+      if (historyRows.length > 0) {
+        await this.api.insertMany('ticket_history', historyRows);
+      }
     }
 
     this._tickets.update(ts => ts.map(t => t.id === id ? { ...t, ...changes } : t));
   }
 
   async addComment(ticketId: string, text: string, user: AppUser) {
-    const { data, error } = await this.sb.from('ticket_comments').insert({ ticket_id: ticketId, user_id: user.id, user_name: user.nombreCompleto, text }).select().single();
-    if (error) throw new Error(error.message);
+    const commentData = { ticket_id: ticketId, user_id: user.id, user_name: user.nombreCompleto, text };
+
+    // Validar con JSON Schema + enviar via API Gateway
+    const data = await this.api.insert('ticket_comments', commentData, 'comment');
+
     const comment: TicketComment = { id: data.id, userId: data.user_id, userName: data.user_name, text: data.text, createdAt: data.created_at };
     this._tickets.update(ts => ts.map(t => t.id === ticketId ? { ...t, comments: [...t.comments, comment] } : t));
   }
 
   async deleteTicket(id: string) {
-    await this.sb.from('tickets').delete().eq('id', id);
+    await this.api.delete('tickets', { id: `eq.${id}` });
     this._tickets.update(ts => ts.filter(t => t.id !== id));
   }
 
-  // ── Grupos CRUD ───────────────────────────────────────────────────────────
+  // ── Grupos CRUD (via API Gateway) ─────────────────────────────────────────
 
   async createGroup(data: Omit<Group, 'id' | 'createdAt'>): Promise<Group> {
     const uid = this._currentUser()!.id;
-    const { data: row, error } = await this.sb.from('groups').insert({
+    const insertData = {
       nombre: data.nombre, descripcion: data.descripcion,
       llm_model: data.llmModel, color: data.color, created_by: uid,
-    }).select().single();
-    if (error || !row) throw new Error(error?.message ?? 'Error creando grupo');
-    await this.sb.from('group_members').insert({ group_id: row.id, user_id: uid, permissions: [...ALL_PERMISSIONS] });
+    };
+
+    const row = await this.api.insert('groups', insertData, 'group');
+
+    await this.api.insert('group_members', {
+      group_id: row.id, user_id: uid, permissions: [...ALL_PERMISSIONS]
+    }, 'group-member');
+
     const group = mapGroup(row, [...data.memberIds, uid]);
     this._groups.update(gs => [...gs, group]);
     return group;
@@ -320,18 +362,21 @@ export class PermissionService {
     if (changes.descripcion !== undefined) updateData.descripcion = changes.descripcion;
     if (changes.llmModel) updateData.llm_model = changes.llmModel;
     if (changes.color) updateData.color = changes.color;
-    await this.sb.from('groups').update(updateData).eq('id', id);
+
+    await this.api.update('groups', updateData, { id: `eq.${id}` });
     this._groups.update(gs => gs.map(g => g.id === id ? { ...g, ...changes } : g));
   }
 
   async deleteGroup(id: string) {
-    await this.sb.from('groups').delete().eq('id', id);
+    await this.api.delete('groups', { id: `eq.${id}` });
     this._groups.update(gs => gs.filter(g => g.id !== id));
   }
 
   async addMemberToGroup(groupId: string, userId: string, permissions: Permission[] = []) {
-    const { error } = await this.sb.from('group_members').upsert({ group_id: groupId, user_id: userId, permissions });
-    if (error) throw new Error(error.message);
+    await this.api.upsert('group_members', {
+      group_id: groupId, user_id: userId, permissions
+    }, 'group-member');
+
     this._groups.update(gs => gs.map(g =>
       g.id === groupId && !g.memberIds.includes(userId)
         ? { ...g, memberIds: [...g.memberIds, userId] } : g
@@ -339,13 +384,13 @@ export class PermissionService {
   }
 
   async removeMemberFromGroup(groupId: string, userId: string) {
-    await this.sb.from('group_members').delete().eq('group_id', groupId).eq('user_id', userId);
+    await this.api.delete('group_members', { group_id: `eq.${groupId}`, user_id: `eq.${userId}` });
     this._groups.update(gs => gs.map(g =>
       g.id === groupId ? { ...g, memberIds: g.memberIds.filter(id => id !== userId) } : g
     ));
   }
 
-  // ── Usuarios CRUD ─────────────────────────────────────────────────────────
+  // ── Usuarios CRUD (via API Gateway) ───────────────────────────────────────
 
   async updateUser(id: string, changes: Partial<AppUser>) {
     const updateData: any = {};
@@ -354,10 +399,9 @@ export class PermissionService {
     if (changes.telefono !== undefined) updateData.telefono = changes.telefono;
     if (changes.direccion !== undefined) updateData.direccion = changes.direccion;
     if (changes.fechaNacimiento !== undefined) updateData.fecha_nacimiento = changes.fechaNacimiento;
-    // Persiste permisos GLOBALES en profiles.permissions
     if (changes.permissions !== undefined) updateData.permissions = changes.permissions;
 
-    await this.sb.from('profiles').update(updateData).eq('id', id);
+    await this.api.update('profiles', updateData, { id: `eq.${id}` }, 'profile');
 
     this._users.update(us => us.map(u => u.id === id ? { ...u, ...changes } : u));
     if (this._currentUser()?.id === id) {
@@ -369,14 +413,14 @@ export class PermissionService {
   }
 
   async updateUserPermissionsInGroup(groupId: string, userId: string, permissions: Permission[]) {
-    await this.sb.from('group_members').update({ permissions }).eq('group_id', groupId).eq('user_id', userId);
+    await this.api.update('group_members', { permissions }, { group_id: `eq.${groupId}`, user_id: `eq.${userId}` });
     if (userId === this._currentUser()?.id && groupId === this._currentGroupId()) {
       this._activePermissions.set(permissions);
     }
   }
 
   async deleteUser(id: string) {
-    await this.sb.from('profiles').delete().eq('id', id);
+    await this.api.delete('profiles', { id: `eq.${id}` });
     this._users.update(us => us.filter(u => u.id !== id));
     this._groups.update(gs => gs.map(g => ({ ...g, memberIds: g.memberIds.filter(mid => mid !== id) })));
   }
@@ -387,10 +431,11 @@ export class PermissionService {
 
   /** Obtiene los permisos por grupo de un usuario específico */
   async getUserGroupMemberships(userId: string): Promise<{ groupId: string; permissions: Permission[] }[]> {
-    const { data } = await this.sb
-      .from('group_members')
-      .select('group_id, permissions')
-      .eq('user_id', userId);
+    const data = await this.api.select<any[]>('group_members', {
+      select: 'group_id,permissions',
+      filters: { user_id: `eq.${userId}` },
+    });
+
     return (data ?? []).map(m => ({
       groupId: m.group_id,
       permissions: (m.permissions ?? []) as Permission[],
