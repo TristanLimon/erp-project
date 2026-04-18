@@ -402,6 +402,12 @@ export class UserManagementComponent {
     const map = this.tempPermsMap[u.id]; if (!map) return;
     const perms = ALL_PERMISSIONS.filter(p => map[p]) as Permission[];
     await this.ps.updateUser(u.id, { permissions: perms });
+
+    // Si el admin modificó sus propios permisos, refrescar permisos activos
+    if (u.id === this.ps.currentUser()?.id) {
+      await this.ps.refreshCurrentUserPermissions();
+    }
+
     this.dirtyUsers.delete(u.id); this.savedUserId = u.id;
     this.msg.add({ severity:'success', summary:'Permisos actualizados', detail:u.nombreCompleto, life:2500 });
     setTimeout(() => { this.savedUserId = null; }, 3000);

@@ -4,14 +4,6 @@ import { Router } from '@angular/router';
 import { catchError, throwError } from 'rxjs';
 import { environment } from '../../environments/environment';
 
-/**
- * HTTP Interceptor funcional (Angular 20 style).
- *
- * Responsabilidades:
- * 1. Inyecta headers de autenticación (apikey, Authorization) en cada petición al API
- * 2. Manejo centralizado de errores HTTP (401, 403, 429, 500)
- * 3. Logging de peticiones y respuestas
- */
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const router = inject(Router);
 

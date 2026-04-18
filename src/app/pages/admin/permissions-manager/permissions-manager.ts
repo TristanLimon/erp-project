@@ -516,6 +516,15 @@ export class PermissionsManagerComponent implements OnInit {
     try {
       const perms = ALL_PERMISSIONS.filter(p => this.globalTemp()[p]) as Permission[];
       await this.ps.updateUser(u.id, { permissions: perms });
+
+      // Actualizar el usuario seleccionado localmente para reflejar los nuevos permisos
+      this.selectedUser.set({ ...u, permissions: perms });
+
+      // Si el admin se modificó a sí mismo, refrescar permisos activos del servicio
+      if (u.id === this.ps.currentUser()?.id) {
+        await this.ps.refreshCurrentUserPermissions();
+      }
+
       this.globalDirty.set(false);
       this.savedGlobal.set(true);
       this.msg.add({ severity: 'success', summary: 'Permisos globales guardados', detail: u.nombreCompleto, life: 2500 });
@@ -560,6 +569,12 @@ export class PermissionsManagerComponent implements OnInit {
     try {
       const perms = ALL_PERMISSIONS.filter(p => this.groupTemps()[m.groupId]?.[p]) as Permission[];
       await this.ps.updateUserPermissionsInGroup(m.groupId, u.id, perms);
+
+      // Si el admin modificó sus propios permisos de grupo, refrescar
+      if (u.id === this.ps.currentUser()?.id) {
+        await this.ps.refreshCurrentUserPermissions();
+      }
+
       this.groupDirty.update(d => ({ ...d, [m.groupId]: false }));
       this.savedGroupId.set(m.groupId);
       this.msg.add({ severity: 'success', summary: `Permisos en "${m.groupName}" guardados`, life: 2500 });

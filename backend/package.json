@@ -1,0 +1,23 @@
+{
+  "name": "erp-backend",
+  "version": "1.0.0",
+  "description": "API Gateway / Backend para ERP Tickets — Express.js + Supabase",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "start:gateway": "node api-gateway.js",
+    "start:tickets": "node tickets-service/server.js",
+    "start:groups": "node groups-service/server.js",
+    "start:users": "node users-service/server.js",
+    "dev:all": "concurrently \"npm run start:gateway\" \"npm run start:tickets\" \"npm run start:groups\" \"npm run start:users\""
+  },
+  "dependencies": {
+    "concurrently": "^9.2.1",
+    "cors": "^2.8.5",
+    "express": "^4.21.0",
+    "express-rate-limit": "^7.4.0",
+    "fastify": "^5.8.5",
+    "http-proxy-middleware": "^3.0.5",
+    "node-fetch": "^3.3.2"
+  }
+}
